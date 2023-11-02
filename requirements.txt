@@ -6,4 +6,4 @@ geopandas
 pydeck
 requests
 seaborn
-matplotlib.pyplot
+matplotlib
