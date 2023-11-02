@@ -1,0 +1,14 @@
+streamlit
+pandas
+plotly.express
+plotly.figure_factory
+geopandas
+pydeck
+base64
+BytesIO
+requests
+json
+datetime
+time
+seaborn
+matplotlib.pyplot
