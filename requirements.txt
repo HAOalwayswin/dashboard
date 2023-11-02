@@ -4,11 +4,6 @@ plotly.express
 plotly
 geopandas
 pydeck
-base64
-BytesIO
 requests
-json
-datetime
-time
 seaborn
 matplotlib.pyplot
