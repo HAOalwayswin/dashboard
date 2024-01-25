@@ -257,6 +257,7 @@ if uploaded_file is not None:
         filtered_df['생년'] = filtered_df['생년'].apply(lambda x: 1900+x if x > 22 else 2000+x)  # 22를 기준으로 1900년대와 2000년대 구분
         filtered_df['나이'] = current_year - filtered_df['생년']
         filtered_df['연령대'] = filtered_df['나이'].apply(calculate_age_group)
+        filtered_df['실행/해지금액(원)'] = pd.to_numeric(filtered_df['실행/해지금액(원)'], errors='coerce')
         
         # 나이 분포 시각화
         st.subheader("고객 연령 분포")
