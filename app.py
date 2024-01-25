@@ -62,7 +62,7 @@ def calculate_age_group(age):
 
 
 uploaded_file = st.file_uploader("파일 업로드", type=["csv", "xlsx", "xls"],key="unique_key_for_uploader")
-loan_amount_by_quarter['실행/해지금액(원)'] = pd.to_numeric(loan_amount_by_quarter['실행/해지금액(원)'], errors='coerce')
+
 
 if uploaded_file is not None:
     try:
@@ -76,7 +76,7 @@ if uploaded_file is not None:
 
         df['기표일자'] = pd.to_datetime(df['기표일자'], errors='coerce')  # 이 부분을 확실히 datetime으로 변환
         df['기표년도'] = pd.to_datetime(df['기표일자']).dt.year  # '기표년도' 추출
-        
+        loan_amount_by_quarter['실행/해지금액(원)'] = pd.to_numeric(loan_amount_by_quarter['실행/해지금액(원)'], errors='coerce')
 
 
 
