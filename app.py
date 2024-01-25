@@ -62,7 +62,7 @@ def calculate_age_group(age):
 
 
 uploaded_file = st.file_uploader("파일 업로드", type=["csv", "xlsx", "xls"],key="unique_key_for_uploader")
-
+loan_amount_by_quarter['실행/해지금액(원)'] = pd.to_numeric(loan_amount_by_quarter['실행/해지금액(원)'], errors='coerce')
 
 if uploaded_file is not None:
     try:
@@ -174,8 +174,6 @@ if uploaded_file is not None:
 
         loan_count_by_quarter = filtered_df.resample('Q', on='기표일자').size().reset_index(name='대출건수')
         loan_count_by_quarter['기표일자'] = loan_count_by_quarter['기표일자'].dt.to_period("Q").astype(str)
-
-        loan_amount_by_quarter['실행/해지금액(원)'] = pd.to_numeric(loan_amount_by_quarter['실행/해지금액(원)'], errors='coerce')
 
         loan_stats = loan_amount_by_quarter['실행/해지금액(원)'].describe()
 
