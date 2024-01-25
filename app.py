@@ -76,7 +76,7 @@ if uploaded_file is not None:
 
         df['기표일자'] = pd.to_datetime(df['기표일자'], errors='coerce')  # 이 부분을 확실히 datetime으로 변환
         df['기표년도'] = pd.to_datetime(df['기표일자']).dt.year  # '기표년도' 추출
-        
+        df['실행/해지금액(원)'] = pd.to_numeric(df['실행/해지금액(원)'], errors='coerce')
 
 
 
@@ -169,7 +169,7 @@ if uploaded_file is not None:
         col1.plotly_chart(fig2, use_container_width=True)
         col2.plotly_chart(fig1, use_container_width=True)
 
-        df['실행/해지금액(원)'] = pd.to_numeric(df['실행/해지금액(원)'], errors='coerce')
+        
         loan_amount_by_quarter = filtered_df.resample('Q', on='기표일자')['실행/해지금액(원)'].sum().reset_index()
         loan_amount_by_quarter['기표일자'] = loan_amount_by_quarter['기표일자'].dt.to_period("Q").astype(str)
 
