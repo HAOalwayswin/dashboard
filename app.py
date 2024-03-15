@@ -66,7 +66,17 @@ def calculate_age_group(age):
     else:
         return "70대 이상"
 
+@st.cache(allow_output_mutation=True)
+def load_geojson():
+    return gpd.read_file("HangJeongDong_ver20230701.geojson")
 
+@st.cache
+def calculate_district_loans(df):
+    # 서울 지역과 자치구 정보 추출 및 대출 규모 계산
+    seoul_df = df[df['사업장주소'].str.contains('서울특별시', na=False)]
+    seoul_df['자치구'] = seoul_df['사업장주소'].str.split().str.get(1)
+    loan_by_district = seoul_df.groupby('자치구')['실행/해지금액(원)'].sum().reset_index()
+    return loan_by_district
 
 uploaded_file = st.file_uploader("파일 업로드", type=["csv", "xlsx", "xls"],key="unique_key_for_uploader")
 
@@ -285,19 +295,6 @@ if uploaded_file is not None:
         
    
         #-------------지도에서 자치구별 대출규모 확인-------------------------------------------------------------
-        
-
-        @st.cache(allow_output_mutation=True)
-        def load_geojson():
-            return gpd.read_file("HangJeongDong_ver20230701.geojson")
-
-        @st.cache
-        def calculate_district_loans(df):
-            # 서울 지역과 자치구 정보 추출 및 대출 규모 계산
-            seoul_df = df[df['사업장주소'].str.contains('서울특별시', na=False)]
-            seoul_df['자치구'] = seoul_df['사업장주소'].str.split().str.get(1)
-            loan_by_district = seoul_df.groupby('자치구')['실행/해지금액(원)'].sum().reset_index()
-            return loan_by_district
         
         if st.sidebar.button('자치구별 대출규모 확인'):
            loan_by_district = calculate_district_loans(filtered_df)
