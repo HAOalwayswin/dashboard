@@ -226,7 +226,7 @@ if uploaded_file is not None:
             st.dataframe(industry_loan_combined.style.highlight_max(axis=0))
         with col6 :
             st.markdown("<h3 style='text-align: center; color: black;'>업종별 대출 규모 파이 차트</h3>", unsafe_allow_html=True)
-            fig8 = px.pie(bank_loan_size, names='대분류업종명', values='대출건수', hole=.3)
+            fig8 = px.pie(industry_loan_combined, names='대분류업종명', values='대출건수', hole=.3)
             fig8.update_traces(textinfo='percent+label')
             st.plotly_chart(fig8, use_container_width=True)
         
