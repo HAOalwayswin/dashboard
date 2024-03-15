@@ -75,8 +75,8 @@ def calculate_district_loans(df):
     # 서울 지역과 자치구 정보 추출 및 대출 규모 계산
     seoul_df = df[df['사업장주소'].str.contains('서울특별시', na=False)]
     seoul_df['자치구'] = seoul_df['사업장주소'].str.split().str.get(1)
-    loan_by_district = seoul_df.groupby('자치구')['실행/해지금액(원)'].sum().reset_index()
-    return loan_by_district
+    seoul_df = seoul_df.groupby('자치구')['실행/해지금액(원)'].sum().reset_index()
+    return seoul_df
 
 uploaded_file = st.file_uploader("파일 업로드", type=["csv", "xlsx", "xls"],key="unique_key_for_uploader")
 
@@ -294,7 +294,7 @@ if uploaded_file is not None:
            district_to_coords = {row['sggnm']: (row['center'][1], row['center'][0]) for idx, row in gdf.iterrows()}
 
            # 서울 데이터에서 자치구 정보가 있는 행만 선택하고, 각 자치구의 중심 좌표를 새로운 열로 추가
-           seoul_df = loan_by_district[loan_by_district['자치구'].isin(district_to_coords.keys())]
+           seoul_df = seoul_df[seoul_df['자치구'].isin(district_to_coords.keys())]
            seoul_df['lat'] = seoul_df['자치구'].apply(lambda x: district_to_coords[x][0])
            seoul_df['lon'] = seoul_df['자치구'].apply(lambda x: district_to_coords[x][1])
 
