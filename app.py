@@ -351,7 +351,7 @@ if uploaded_file is not None:
                 map_data,
                 get_position=["lon", "lat"],
                 get_radius="normalized_loan * 1000",
-                get_fill_color=[255, 0, 0, 160],  # RGBA
+                get_fill_color=[255, 0, 0, 16],  # RGBA
                 pickable=True,
                 auto_highlight=True
             )
