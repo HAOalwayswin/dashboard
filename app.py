@@ -329,10 +329,11 @@ if uploaded_file is not None:
             loan_by_district = calculate_district_loans(filtered_df)  # 변경된 부분: 함수 사용
             st.session_state.map_data = create_map_data(loan_by_district, gdf)
             
+            
             # Pydeck Layer 생성
             layer = pdk.Layer(
                 "ScatterplotLayer",
-                map_data,
+                st.session_state.map_data,
                 get_position=["lon", "lat"],
                 get_radius="normalized_loan * 1000",
                 get_fill_color=[255, 0, 0, 160],  # RGBA
@@ -350,13 +351,11 @@ if uploaded_file is not None:
             view_state = pdk.ViewState(latitude=37.5665, longitude=126.9780, zoom=10)
             deck_chart = pdk.Deck(layers=[layer], initial_view_state=view_state, tooltip=tooltip)
     
-            # 세션 상태에 지도 데이터가 있으면 지도 표시
-            if st.session_state.map_data is not None:
+            
+            # 세션 상태에 지도 데이터가 저장되었는지 확인 후, 저장된 지도 데이터가 있으면 지도 표시
+            if 'map_data' in st.session_state and st.session_state.map_data is not None:
                 st.subheader("지도에서 자치구별 대출규모 확인하기")
-                # 저장된 지도 데이터로 지도 표시
                 st.pydeck_chart(st.session_state.map_data)
-            else:
-                st.write("지도를 생성하기 위해 '자치구별 대출규모 확인' 버튼을 클릭하세요.")
 
 
 
