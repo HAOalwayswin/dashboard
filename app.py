@@ -281,7 +281,7 @@ if uploaded_file is not None:
            loan_by_district = calculate_district_loans(filtered_df)
 
            # GeoJSON 파일 로딩
-           gdf = load_geosjson()
+           gdf = load_geojson()
 
            # 자치구별 대출 규모 계산
            loan_by_district = calculate_district_loans(filtered_df)
