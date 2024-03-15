@@ -297,13 +297,8 @@ if uploaded_file is not None:
         #-------------지도에서 자치구별 대출규모 확인-------------------------------------------------------------
         
         if st.sidebar.button('자치구별 대출규모 확인'):
-           loan_by_district = calculate_district_loans(filtered_df)
-
-            # GeoJSON 파일 로딩
-            gdf = load_geosjson()
-
-            # 자치구별 대출 규모 계산
-            loan_by_district = calculate_district_loans(filtered_df)
+            gdf = load_geojson()  # 변경된 부분: 함수 사용
+            loan_by_district = calculate_district_loans(filtered_df)  # 변경된 부분: 함수 사용
 
             # GeoJSON 데이터의 geometry 정보를 이용하여 각 자치구의 대표적인 좌표(중심)를 계산
             gdf['center'] = gdf['geometry'].apply(lambda x: x.representative_point().coords[:])
