@@ -292,82 +292,83 @@ if uploaded_file is not None:
         #-------------지도에서 자치구별 대출규모 확인-------------------------------------------------------------
         
         if st.sidebar.button('자치구별 대출규모 확인'):
-            gdf = load_geojson()  # 변경된 부분: 함수 사용
-            loan_by_district = calculate_district_loans(filtered_df)  # 변경된 부분: 함수 사용
-
-            # GeoJSON 데이터의 geometry 정보를 이용하여 각 자치구의 대표적인 좌표(중심)를 계산
-            gdf['center'] = gdf['geometry'].apply(lambda x: x.representative_point().coords[:])
-            gdf['center'] = gdf['center'].apply(lambda x: x[0])
-
-            # 자치구 이름과 중심 좌표를 딕셔너리로 저장
-            district_to_coords = {row['sggnm']: (row['center'][1], row['center'][0]) for idx, row in gdf.iterrows()}
-
-            # 서울 데이터에서 자치구 정보가 있는 행만 선택하고, 각 자치구의 중심 좌표를 새로운 열로 추가
-            seoul_df = loan_by_district[loan_by_district['자치구'].isin(district_to_coords.keys())]
-            seoul_df['lat'] = loan_by_district['자치구'].apply(lambda x: district_to_coords[x][0])
-            seoul_df['lon'] = loan_by_district['자치구'].apply(lambda x: district_to_coords[x][1])
-
-            
-            loan_by_district.columns = ['자치구', '대출 규모']
-
-            # 좌표와 대출 규모를 합친 새로운 데이터프레임 생성
-            map_data = seoul_df[['자치구', 'lat', 'lon']].drop_duplicates().merge(loan_by_district, on='자치구')
-
-            # 좌표와 대출 규모를 합친 새로운 데이터프레임 생성
-            seoul_df['lat'] = seoul_df['자치구'].apply(lambda x: district_to_coords.get(x, (None, None))[0])
-            seoul_df['lon'] = seoul_df['자치구'].apply(lambda x: district_to_coords.get(x, (None, None))[1])
-            map_data = seoul_df[['자치구', 'lat', 'lon']].drop_duplicates().merge(loan_by_district, on='자치구')
-
-            # 대출 규모의 최대값과 최소값을 계산하여 정규화 (비율로 표현)
-            map_data['대출 규모'] = pd.to_numeric(map_data['대출 규모'], errors='coerce')
-            max_loan = map_data['대출 규모'].max()
-            min_loan = map_data['대출 규모'].min()
-
-
-
-            # 대출 규모를 정규화하여 새로운 열로 추가
-            map_data['normalized_loan'] = (map_data['대출 규모'] - min_loan) / (max_loan - min_loan)
-
-            map_data['대출 규모 (백만 단위)'] = map_data['대출 규모'] / 1e7
-
-            # 서울 중구의 대표적인 좌표 (위도, 경도)
-            seoul_junggu_coords = (37.5637, 126.9970)
-
-            # map_data에서 '중구'에 해당하는 행의 좌표를 업데이트
-            map_data.loc[map_data['자치구'] == '중구', 'lat'] = seoul_junggu_coords[0]
-            map_data.loc[map_data['자치구'] == '중구', 'lon'] = seoul_junggu_coords[1]
-
-            # 서울 강서구의 대표적인 좌표 (위도, 경도)
-            seoul_gangseogu_coords = (37.5510, 126.8495)
-
-            # map_data에서 '강서구'에 해당하는 행의 좌표를 업데이트
-            map_data.loc[map_data['자치구'] == '강서구', 'lat'] = seoul_gangseogu_coords[0]
-            map_data.loc[map_data['자치구'] == '강서구', 'lon'] = seoul_gangseogu_coords[1]
-
-            # Pydeck Layer 생성
-            layer = pdk.Layer(
-                "ScatterplotLayer",
-                map_data,
-                get_position=["lon", "lat"],
-                get_radius="normalized_loan * 1000",
-                get_fill_color=[255, 0, 0, 160],  # RGBA
-                pickable=True,
-                auto_highlight=True
-            )
-
-            # Pydeck Chart 생성
-            tooltip = {
-                "html": "<b>자치구:</b> {자치구} <br/> <b>대출 규모:</b> {대출 규모}",
-                "style": {"backgroundColor": "steelblue", "color": "white"}
-            }
-
-            # 지도 렌더링
-            view_state = pdk.ViewState(latitude=37.5665, longitude=126.9780, zoom=10)
-            deck_chart = pdk.Deck(layers=[layer], initial_view_state=view_state, tooltip=tooltip)
-
-            st.subheader("지도에서 자치구별 대출규모 확인하기")
-            # Streamlit에 지도 표시
-            st.pydeck_chart(deck_chart)
+            if st.session_state.map_data:
+                gdf = load_geojson()  # 변경된 부분: 함수 사용
+                loan_by_district = calculate_district_loans(filtered_df)  # 변경된 부분: 함수 사용
+    
+                # GeoJSON 데이터의 geometry 정보를 이용하여 각 자치구의 대표적인 좌표(중심)를 계산
+                gdf['center'] = gdf['geometry'].apply(lambda x: x.representative_point().coords[:])
+                gdf['center'] = gdf['center'].apply(lambda x: x[0])
+    
+                # 자치구 이름과 중심 좌표를 딕셔너리로 저장
+                district_to_coords = {row['sggnm']: (row['center'][1], row['center'][0]) for idx, row in gdf.iterrows()}
+    
+                # 서울 데이터에서 자치구 정보가 있는 행만 선택하고, 각 자치구의 중심 좌표를 새로운 열로 추가
+                seoul_df = loan_by_district[loan_by_district['자치구'].isin(district_to_coords.keys())]
+                seoul_df['lat'] = loan_by_district['자치구'].apply(lambda x: district_to_coords[x][0])
+                seoul_df['lon'] = loan_by_district['자치구'].apply(lambda x: district_to_coords[x][1])
+    
+                
+                loan_by_district.columns = ['자치구', '대출 규모']
+    
+                # 좌표와 대출 규모를 합친 새로운 데이터프레임 생성
+                map_data = seoul_df[['자치구', 'lat', 'lon']].drop_duplicates().merge(loan_by_district, on='자치구')
+    
+                # 좌표와 대출 규모를 합친 새로운 데이터프레임 생성
+                seoul_df['lat'] = seoul_df['자치구'].apply(lambda x: district_to_coords.get(x, (None, None))[0])
+                seoul_df['lon'] = seoul_df['자치구'].apply(lambda x: district_to_coords.get(x, (None, None))[1])
+                map_data = seoul_df[['자치구', 'lat', 'lon']].drop_duplicates().merge(loan_by_district, on='자치구')
+    
+                # 대출 규모의 최대값과 최소값을 계산하여 정규화 (비율로 표현)
+                map_data['대출 규모'] = pd.to_numeric(map_data['대출 규모'], errors='coerce')
+                max_loan = map_data['대출 규모'].max()
+                min_loan = map_data['대출 규모'].min()
+    
+    
+    
+                # 대출 규모를 정규화하여 새로운 열로 추가
+                map_data['normalized_loan'] = (map_data['대출 규모'] - min_loan) / (max_loan - min_loan)
+    
+                map_data['대출 규모 (백만 단위)'] = map_data['대출 규모'] / 1e7
+    
+                # 서울 중구의 대표적인 좌표 (위도, 경도)
+                seoul_junggu_coords = (37.5637, 126.9970)
+    
+                # map_data에서 '중구'에 해당하는 행의 좌표를 업데이트
+                map_data.loc[map_data['자치구'] == '중구', 'lat'] = seoul_junggu_coords[0]
+                map_data.loc[map_data['자치구'] == '중구', 'lon'] = seoul_junggu_coords[1]
+    
+                # 서울 강서구의 대표적인 좌표 (위도, 경도)
+                seoul_gangseogu_coords = (37.5510, 126.8495)
+    
+                # map_data에서 '강서구'에 해당하는 행의 좌표를 업데이트
+                map_data.loc[map_data['자치구'] == '강서구', 'lat'] = seoul_gangseogu_coords[0]
+                map_data.loc[map_data['자치구'] == '강서구', 'lon'] = seoul_gangseogu_coords[1]
+    
+                # Pydeck Layer 생성
+                layer = pdk.Layer(
+                    "ScatterplotLayer",
+                    map_data,
+                    get_position=["lon", "lat"],
+                    get_radius="normalized_loan * 1000",
+                    get_fill_color=[255, 0, 0, 160],  # RGBA
+                    pickable=True,
+                    auto_highlight=True
+                )
+    
+                # Pydeck Chart 생성
+                tooltip = {
+                    "html": "<b>자치구:</b> {자치구} <br/> <b>대출 규모:</b> {대출 규모}",
+                    "style": {"backgroundColor": "steelblue", "color": "white"}
+                }
+    
+                # 지도 렌더링
+                view_state = pdk.ViewState(latitude=37.5665, longitude=126.9780, zoom=10)
+                deck_chart = pdk.Deck(layers=[layer], initial_view_state=view_state, tooltip=tooltip)
+    
+                st.subheader("지도에서 자치구별 대출규모 확인하기")
+                # Streamlit에 지도 표시
+                st.pydeck_chart(deck_chart)
             
             
             
