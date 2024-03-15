@@ -264,13 +264,13 @@ if uploaded_file is not None:
         loan_amount_by_age_group = filtered_df.groupby('연령대')['실행/해지금액(원)'].sum().reset_index()
         
         col5, col6 = st.columns(2)
-        with col5:
+        with col7:
             st.markdown("<h3 style='text-align: center; color: black;'>고객 연령 분포</h3>", unsafe_allow_html=True)
             fig = px.bar(age_distribution, x='나이', y='고객 수', color='고객 수')
             fig.update_layout(coloraxis_showscale=False)
             st.plotly_chart(fig, use_container_width=True)
             
-        with col6:
+        with col8:
             st.markdown("<h3 style='text-align: center; color: black;'>연령대별 대출금액</h3>", unsafe_allow_html=True)
             fig = px.pie(loan_amount_by_age_group, names='연령대', values='실행/해지금액(원)', hole=.3)
             fig.update_traces(textinfo='percent+label')
