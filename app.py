@@ -224,6 +224,9 @@ if uploaded_file is not None:
         st.dataframe(industry_loan_combined.style.highlight_max(axis=0))
         
         st.markdown("## 🔍 업종별 연령대 분포", unsafe_allow_html=True)
+        industry_age_distribution = filtered_df.groupby(['대분류업종명', '연령대']).size().reset_index(name='고객 수')
+        industry_age_distribution_pivot = industry_age_distribution.pivot(index='대분류업종명', columns='연령대', values='고객 수')
+        
         fig8 = px.imshow(industry_age_distribution_pivot,
                          labels=dict(x="연령대", y="업종", color="고객 수"),
                          x=industry_age_distribution_pivot.columns,
