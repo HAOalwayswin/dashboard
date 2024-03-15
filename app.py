@@ -312,7 +312,7 @@ if uploaded_file is not None:
             loan_by_district.columns = ['자치구', '대출 규모']
     
             # 좌표와 대출 규모를 합친 새로운 데이터프레임 생성
-             map_data = seoul_df[['자치구', 'lat', 'lon']].drop_duplicates().merge(loan_by_district, on='자치구')
+            map_data = seoul_df[['자치구', 'lat', 'lon']].drop_duplicates().merge(loan_by_district, on='자치구')
     
             # 좌표와 대출 규모를 합친 새로운 데이터프레임 생성
             seoul_df['lat'] = seoul_df['자치구'].apply(lambda x: district_to_coords.get(x, (None, None))[0])
@@ -322,7 +322,7 @@ if uploaded_file is not None:
             # 대출 규모의 최대값과 최소값을 계산하여 정규화 (비율로 표현)
             map_data['대출 규모'] = pd.to_numeric(map_data['대출 규모'], errors='coerce')
             max_loan = map_data['대출 규모'].max()
-             min_loan = map_data['대출 규모'].min()
+            min_loan = map_data['대출 규모'].min()
     
     
     
