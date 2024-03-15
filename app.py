@@ -286,18 +286,27 @@ if uploaded_file is not None:
    
         #-------------지도에서 자치구별 대출규모 확인-------------------------------------------------------------
         
+
+        @st.cache(allow_output_mutation=True)
+        def load_geojson():
+            return gpd.read_file("HangJeongDong_ver20230701.geojson")
+
+        @st.cache
+        def calculate_district_loans(df):
+            # 서울 지역과 자치구 정보 추출 및 대출 규모 계산
+            seoul_df = df[df['사업장주소'].str.contains('서울특별시', na=False)]
+            seoul_df['자치구'] = seoul_df['사업장주소'].str.split().str.get(1)
+            loan_by_district = seoul_df.groupby('자치구')['실행/해지금액(원)'].sum().reset_index()
+            return loan_by_district
         
         if st.sidebar.button('자치구별 대출규모 확인'):
-            # '사업장주소'에서 서울 지역과 자치구 정보 추출
-            seoul_df = filtered_df[filtered_df['사업장주소'].str.contains('서울특별시', na=False)]
-            seoul_df['자치구'] = seoul_df['사업장주소'].str.split().str.get(1)  # None 반환 if IndexError
+           loan_by_district = calculate_district_loans(filtered_df)
 
             # GeoJSON 파일 로딩
-            gdf = gpd.read_file("HangJeongDong_ver20230701.geojson")
+            gdf = load_geosjson()
 
             # 자치구별 대출 규모 계산
-            loan_by_district = seoul_df.groupby('자치구')['실행/해지금액(원)'].sum().reset_index()
-            loan_by_district.columns = ['자치구', '대출 규모']
+            loan_by_district = calculate_district_loans(filtered_df)
 
             # GeoJSON 데이터의 geometry 정보를 이용하여 각 자치구의 대표적인 좌표(중심)를 계산
             gdf['center'] = gdf['geometry'].apply(lambda x: x.representative_point().coords[:])
