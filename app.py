@@ -78,6 +78,19 @@ def calculate_district_loans(df):
     loan_by_district = seoul_df.groupby('자치구')['실행/해지금액(원)'].sum().reset_index()
     return loan_by_district
 
+def update_filtered_df():
+    filtered_df = df.copy()
+    if '전체 선택' not in selected_banks:
+        filtered_df = filtered_df[filtered_df['은행구분'].isin(selected_banks)]
+    if '전체 선택' not in selected_years:
+        filtered_df = filtered_df[filtered_df['기표년도'].isin(selected_years)]
+    if '전체 선택' not in selected_industries:
+        filtered_df = filtered_df[filtered_df['대분류업종명'].isin(selected_industries)]
+    filtered_df = filtered_df[(filtered_df['기표일자'] >= pd.Timestamp(selected_date_range[0])) & (filtered_df['기표일자'] <= pd.Timestamp(selected_date_range[1]))]
+    st.session_state.filtered_df = filtered_df
+
+
+
 uploaded_file = st.file_uploader("파일 업로드", type=["csv", "xlsx", "xls"],key="unique_key_for_uploader")
 
 
@@ -116,16 +129,6 @@ if uploaded_file is not None:
             st.session_state.filtered_df = df.copy()
         
         # 필터링 조건이 변경될 때마다 데이터프레임 업데이트
-        def update_filtered_df():
-            filtered_df = df.copy()
-            if '전체 선택' not in selected_banks:
-                filtered_df = filtered_df[filtered_df['은행구분'].isin(selected_banks)]
-            if '전체 선택' not in selected_years:
-                filtered_df = filtered_df[filtered_df['기표년도'].isin(selected_years)]
-            if '전체 선택' not in selected_industries:
-                filtered_df = filtered_df[filtered_df['대분류업종명'].isin(selected_industries)]
-            filtered_df = filtered_df[(filtered_df['기표일자'] >= pd.Timestamp(selected_date_range[0])) & (filtered_df['기표일자'] <= pd.Timestamp(selected_date_range[1]))]
-            st.session_state.filtered_df = filtered_df
         
         update_filtered_df()
 
