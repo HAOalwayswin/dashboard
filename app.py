@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(layout='wide')
 
-
+@st.cache(allow_output_mutation=True)
 def to_excel(df):
     output = BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
@@ -44,6 +44,13 @@ def create_download_button(df, filename):
         mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     )
 
+@st.cache(allow_output_mutation=True)  # Added
+def load_data(uploaded_file):  # New function
+    if uploaded_file.name.endswith('.csv'):
+        return pd.read_csv(uploaded_file, encoding='cp949')
+    elif uploaded_file.name.endswith('.xlsx') or uploaded_file.name.endswith('.xls'):
+        return pd.read_excel(uploaded_file)
+
 # 연령대 계산을 위한 함수
 def calculate_age_group(age):
     if age < 30:
@@ -66,10 +73,7 @@ uploaded_file = st.file_uploader("파일 업로드", type=["csv", "xlsx", "xls"]
 
 if uploaded_file is not None:
     try:
-        if uploaded_file.name.endswith('.csv'):
-            df = pd.read_csv(uploaded_file, encoding='cp949')
-        elif uploaded_file.name.endswith('.xlsx') or uploaded_file.name.endswith('.xls'):
-            df = pd.read_excel(uploaded_file)
+        df = load_data(uploaded_file)
         
         df=df.drop(columns=['실행/해지구분','잔액(원)','보증일자','보증기한','주채무기한','업종코드','상환구분','보증종류','상대처코드','상대처','자금종류','자금명','건별구분','규모','규모(조사)','담당팀','담당자','고용증가수','사업장우편번호','사업장우편번호(조사)','사업장이하주소','사업장전화번호','거주지주소','거주지이하주소','구분','재보증기관','재보증비율','재보증금액','사업자구분','취소/정당','보증방법','담당부점','조사자','업체상태','처리팀','처리자','상담자','상담입력자','휴대폰번호','접수금액','접수일자','상담일자','상담금액','조사일자','심사일자','승인일자','품의일자','약정일자','약정등록일자','수납여부'])
         total_count = len(df)
