@@ -174,6 +174,7 @@ if uploaded_file is not None:
         st.markdown(f"<div class='info-box'>📊 업로드된 파일 총 데이터 수: {format(total_count, ',')}건</div>", unsafe_allow_html=True)
         
         # 데이터 시각화 - 은행별 대출 규모
+        bank_loan_size = filtered_df.groupby('은행구분')['차입금(운전)'].sum().reset_index()
         st.markdown("## 💼 은행별 대출 규모", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
@@ -191,6 +192,14 @@ if uploaded_file is not None:
         
         # 분기별 대출 금액 및 대출 건수
         st.markdown("## 📈 분기별 대출 동향", unsafe_allow_html=True)
+        loan_amount_by_quarter = filtered_df.resample('Q', on='기표일자')['실행/해지금액(원)'].sum().reset_index()
+        loan_amount_by_quarter['기표일자'] = loan_amount_by_quarter['기표일자'].dt.to_period("Q").astype(str)
+
+        loan_count_by_quarter = filtered_df.resample('Q', on='기표일자').size().reset_index(name='대출건수')
+        loan_count_by_quarter['기표일자'] = loan_count_by_quarter['기표일자'].dt.to_period("Q").astype(str)
+
+        loan_stats = loan_amount_by_quarter['실행/해지금액(원)'].describe()
+        
         col3, col4 = st.columns([3, 2])
         with col3:
             st.markdown("<h3 style='text-align: center; color: black;'>분기별 대출 금액 변화</h3>", unsafe_allow_html=True)
@@ -205,6 +214,12 @@ if uploaded_file is not None:
             st.plotly_chart(fig7, use_container_width=True)
         
         # 업종별 대출 정보 및 연령대 분포
+        industry_loan_size = filtered_df.groupby('대분류업종명')['차입금(운전)'].sum().reset_index()
+        industry_loan_count = filtered_df.groupby('대분류업종명').size().reset_index(name='대출건수')
+        industry_loan_combined = pd.merge(industry_loan_size, industry_loan_count, on='대분류업종명')
+        industry_loan_combined = industry_loan_combined.sort_values(by=['차입금(운전)', '대출건수'], ascending=[False, False])
+        industry_loan_combined['차입금(운전)'] = industry_loan_combined['차입금(운전)'].apply(lambda x: f"{x / 1e6:,.0f}백만원")
+        
         st.markdown("## 🏭 업종별 대출 정보", unsafe_allow_html=True)
         st.dataframe(industry_loan_combined.style.highlight_max(axis=0))
         
@@ -220,6 +235,13 @@ if uploaded_file is not None:
         
         # 고객 연령 분포 및 연령대별 대출금액
         st.markdown("## 🧑‍💼 고객 연령 분포 및 대출 분석", unsafe_allow_html=True)
+            
+        filtered_df['생년'] = filtered_df['주민번호'].str[:2].astype(int)
+        filtered_df['생년'] = filtered_df['생년'].apply(lambda x: 1900+x if x > 22 else 2000+x)  # 22를 기준으로 1900년대와 2000년대 구분
+        filtered_df['나이'] = current_year - filtered_df['생년']
+        filtered_df['연령대'] = filtered_df['나이'].apply(calculate_age_group)
+        filtered_df['실행/해지금액(원)'] = pd.to_numeric(filtered_df['실행/해지금액(원)'], errors='coerce')
+        
         col5, col6 = st.columns(2)
         with col5:
             st.markdown("<h3 style='text-align: center; color: black;'>고객 연령 분포</h3>", unsafe_allow_html=True)
