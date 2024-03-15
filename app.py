@@ -255,6 +255,7 @@ if uploaded_file is not None:
         filtered_df['나이'] = current_year - filtered_df['생년']
         filtered_df['연령대'] = filtered_df['나이'].apply(calculate_age_group)
         filtered_df['실행/해지금액(원)'] = pd.to_numeric(filtered_df['실행/해지금액(원)'], errors='coerce')
+        loan_amount_by_age_group = filtered_df.groupby('연령대')['실행/해지금액(원)'].sum().reset_index()
         
         col5, col6 = st.columns(2)
         with col5:
