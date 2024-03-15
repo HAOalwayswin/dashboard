@@ -232,6 +232,8 @@ if uploaded_file is not None:
         filtered_df['나이'] = current_year - filtered_df['생년']
         filtered_df['연령대'] = filtered_df['나이'].apply(calculate_age_group)
         filtered_df['실행/해지금액(원)'] = pd.to_numeric(filtered_df['실행/해지금액(원)'], errors='coerce')
+        age_distribution = filtered_df['나이'].value_counts().sort_index().reset_index()
+        age_distribution.columns = ['나이', '고객 수']
         
         industry_age_distribution = filtered_df.groupby(['대분류업종명', '연령대']).size().reset_index(name='고객 수')
         industry_age_distribution_pivot = industry_age_distribution.pivot(index='대분류업종명', columns='연령대', values='고객 수')
