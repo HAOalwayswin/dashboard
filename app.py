@@ -301,7 +301,7 @@ if uploaded_file is not None:
         
         if st.sidebar.button('자치구별 대출규모 확인'):
             # '사업장주소'에서 서울 지역과 자치구 정보 추출
-            seoul_df = filtered_df[filtered_df['사업장주소'].str.contains('서울', na=False)]
+            seoul_df = filtered_df[filtered_df['사업장주소'].str.contains('서울특별시', na=False)]
             seoul_df['자치구'] = seoul_df['사업장주소'].str.split().str.get(1)  # None 반환 if IndexError
 
             # GeoJSON 파일 로딩
