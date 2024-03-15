@@ -284,7 +284,7 @@ if uploaded_file is not None:
            gdf = load_geojson()
 
            # 자치구별 대출 규모 계산
-           loan_by_district = calculate_district_loans(filtered_df)
+           seoul_df = calculate_district_loans(filtered_df)
 
            # GeoJSON 데이터의 geometry 정보를 이용하여 각 자치구의 대표적인 좌표(중심)를 계산
            gdf['center'] = gdf['geometry'].apply(lambda x: x.representative_point().coords[:])
