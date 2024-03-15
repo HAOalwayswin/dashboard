@@ -290,7 +290,9 @@ if uploaded_file is not None:
         
    
         #-------------지도에서 자치구별 대출규모 확인-------------------------------------------------------------
-        
+        if 'map_data' not in st.session_state:
+            st.session_state.map_data = None
+            
         if st.sidebar.button('자치구별 대출규모 확인'):
             gdf = load_geojson()  # 변경된 부분: 함수 사용
             loan_by_district = calculate_district_loans(filtered_df)  # 변경된 부분: 함수 사용
@@ -312,9 +314,6 @@ if uploaded_file is not None:
     
             # 좌표와 대출 규모를 합친 새로운 데이터프레임 생성
             map_data = seoul_df[['자치구', 'lat', 'lon']].drop_duplicates().merge(loan_by_district, on='자치구')
-            
-            if 'map_data' not in st.session_state:
-                st.session_state.map_data = None  # 지도 데이터를 저장하는 세션 상태 초기화
                 
             # 좌표와 대출 규모를 합친 새로운 데이터프레임 생성
             seoul_df['lat'] = seoul_df['자치구'].apply(lambda x: district_to_coords.get(x, (None, None))[0])
@@ -346,7 +345,9 @@ if uploaded_file is not None:
             # map_data에서 '강서구'에 해당하는 행의 좌표를 업데이트
             map_data.loc[map_data['자치구'] == '강서구', 'lat'] = seoul_gangseogu_coords[0]
             map_data.loc[map_data['자치구'] == '강서구', 'lon'] = seoul_gangseogu_coords[1]
-    
+
+            st.session_state.map_data = create_map_data(loan_by_district, gdf)
+            
             # Pydeck Layer 생성
             layer = pdk.Layer(
                 "ScatterplotLayer",
