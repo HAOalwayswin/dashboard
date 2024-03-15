@@ -78,50 +78,6 @@ def calculate_district_loans(df):
     loan_by_district = seoul_df.groupby('자치구')['실행/해지금액(원)'].sum().reset_index()
     return loan_by_district
 
-def update_filtered_df():
-    filtered_df = df.copy()
-    if '전체 선택' not in selected_banks:
-        filtered_df = filtered_df[filtered_df['은행구분'].isin(selected_banks)]
-    if '전체 선택' not in selected_years:
-        filtered_df = filtered_df[filtered_df['기표년도'].isin(selected_years)]
-    if '전체 선택' not in selected_industries:
-        filtered_df = filtered_df[filtered_df['대분류업종명'].isin(selected_industries)]
-    filtered_df = filtered_df[(filtered_df['기표일자'] >= pd.Timestamp(selected_date_range[0])) & (filtered_df['기표일자'] <= pd.Timestamp(selected_date_range[1]))]
-    st.session_state.filtered_df = filtered_df
-
-def create_map_data(loan_by_district, gdf):
-    # GeoJSON 데이터의 geometry 정보를 이용하여 각 자치구의 대표적인 좌표(중심)를 계산
-    gdf['center'] = gdf['geometry'].apply(lambda x: x.representative_point().coords[:])
-    gdf['center'] = gdf['center'].apply(lambda x: x[0])
-    # 자치구 이름과 중심 좌표를 딕셔너리로 저장
-    district_to_coords = {row['sggnm']: (row['center'][1], row['center'][0]) for idx, row in gdf.iterrows()}
-    # loan_by_district 데이터에 위도와 경도 정보 추가
-    loan_by_district['lat'] = loan_by_district['자치구'].apply(lambda x: district_to_coords.get(x, (None, None))[0])
-    loan_by_district['lon'] = loan_by_district['자치구'].apply(lambda x: district_to_coords.get(x, (None, None))[1])
-    # 대출 규모의 최대값과 최소값을 계산하여 정규화
-    max_loan = loan_by_district['대출 규모'].max()
-    min_loan = loan_by_district['대출 규모'].min()
-    loan_by_district['normalized_loan'] = (loan_by_district['대출 규모'] - min_loan) / (max_loan - min_loan) * 1000  # 반경을 위해 값 조정
-    # Pydeck Layer 생성
-    layer = pdk.Layer(
-        "ScatterplotLayer",
-        loan_by_district,
-        get_position=["lon", "lat"],
-        get_radius="normalized_loan",  # 반경
-        get_fill_color=[255, 140, 0, 160],  # 색상: 주황색, RGBA
-        pickable=True,
-        auto_highlight=True
-    )
-    # Pydeck Chart 생성
-    view_state = pdk.ViewState(
-        latitude=37.5665,
-        longitude=126.9780,
-        zoom=10
-    )
-    return pdk.Deck(layers=[layer], initial_view_state=view_state, tooltip={"text": "{자치구}: {대출 규모}원"})
-
-
-
 uploaded_file = st.file_uploader("파일 업로드", type=["csv", "xlsx", "xls"],key="unique_key_for_uploader")
 
 
@@ -141,7 +97,7 @@ if uploaded_file is not None:
 
         #----------------------sidebar-----------------------------------------------
         st.sidebar.title("필터 옵션")
-        
+
         selected_banks = st.sidebar.multiselect(
             "은행 선택", options=['전체 선택'] + list(df['은행구분'].unique()), default=['전체 선택'])
         
@@ -150,24 +106,23 @@ if uploaded_file is not None:
         
         selected_industries = st.sidebar.multiselect(
             "업종 선택", options=['전체 선택'] + list(df['대분류업종명'].unique()), default=['전체 선택'])
-        
-        min_date, max_date = df['기표일자'].min(), df['기표일자'].max()
+
+        min_date = df['기표일자'].min().date()
+        max_date = df['기표일자'].max().date()
         selected_date_range = st.sidebar.slider(
-            "기표일자 범위 선택", min_date.date(), max_date.date(), (min_date.date(), max_date.date()))
+            "기표일자 범위 선택", min_date, max_date, (min_date, max_date))
 
         filtered_df = df.copy()
 
-        
-        # 세션 상태 초기화
-        if 'filtered_df' not in st.session_state:
-            st.session_state.filtered_df = df.copy()
-        
-        # 필터링 조건이 변경될 때마다 데이터프레임 업데이트
-        
-        update_filtered_df()
+        if '전체 선택' not in selected_banks:
+            filtered_df = filtered_df[filtered_df['은행구분'].isin(selected_banks)]
+        if '전체 선택' not in selected_years:
+            filtered_df = filtered_df[filtered_df['기표년도'].isin(selected_years)]
+        if '전체 선택' not in selected_industries:
+            filtered_df = filtered_df[filtered_df['대분류업종명'].isin(selected_industries)]
 
-
-
+        start_date, end_date = pd.Timestamp(selected_date_range[0]), pd.Timestamp(selected_date_range[1])
+        filtered_df = filtered_df[(filtered_df['기표일자'] >= start_date) & (filtered_df['기표일자'] <= end_date)]
 
 
 
@@ -321,41 +276,93 @@ if uploaded_file is not None:
         
    
         #-------------지도에서 자치구별 대출규모 확인-------------------------------------------------------------
-        if 'map_data' not in st.session_state:
-            st.session_state.map_data = None
-            
+        
         if st.sidebar.button('자치구별 대출규모 확인'):
-            gdf = load_geojson()  # 변경된 부분: 함수 사용
-            loan_by_district = calculate_district_loans(filtered_df)  # 변경된 부분: 함수 사용
-            st.session_state.map_data = create_map_data(loan_by_district, gdf)
-            
-            
+           loan_by_district = calculate_district_loans(filtered_df)
+
+            # GeoJSON 파일 로딩
+            gdf = load_geosjson()
+
+            # 자치구별 대출 규모 계산
+            loan_by_district = calculate_district_loans(filtered_df)
+
+            # GeoJSON 데이터의 geometry 정보를 이용하여 각 자치구의 대표적인 좌표(중심)를 계산
+            gdf['center'] = gdf['geometry'].apply(lambda x: x.representative_point().coords[:])
+            gdf['center'] = gdf['center'].apply(lambda x: x[0])
+
+            # 자치구 이름과 중심 좌표를 딕셔너리로 저장
+            district_to_coords = {row['sggnm']: (row['center'][1], row['center'][0]) for idx, row in gdf.iterrows()}
+
+            # 서울 데이터에서 자치구 정보가 있는 행만 선택하고, 각 자치구의 중심 좌표를 새로운 열로 추가
+            seoul_df = seoul_df[seoul_df['자치구'].isin(district_to_coords.keys())]
+            seoul_df['lat'] = seoul_df['자치구'].apply(lambda x: district_to_coords[x][0])
+            seoul_df['lon'] = seoul_df['자치구'].apply(lambda x: district_to_coords[x][1])
+
+            # 자치구별 대출 규모 계산
+            loan_by_district = seoul_df.groupby('자치구')['실행/해지금액(원)'].sum().reset_index()
+            loan_by_district.columns = ['자치구', '대출 규모']
+
+            # 좌표와 대출 규모를 합친 새로운 데이터프레임 생성
+            map_data = seoul_df[['자치구', 'lat', 'lon']].drop_duplicates().merge(loan_by_district, on='자치구')
+
+            # 좌표와 대출 규모를 합친 새로운 데이터프레임 생성
+            seoul_df['lat'] = seoul_df['자치구'].apply(lambda x: district_to_coords.get(x, (None, None))[0])
+            seoul_df['lon'] = seoul_df['자치구'].apply(lambda x: district_to_coords.get(x, (None, None))[1])
+            map_data = seoul_df[['자치구', 'lat', 'lon']].drop_duplicates().merge(loan_by_district, on='자치구')
+
+            # 대출 규모의 최대값과 최소값을 계산하여 정규화 (비율로 표현)
+            map_data['대출 규모'] = pd.to_numeric(map_data['대출 규모'], errors='coerce')
+            max_loan = map_data['대출 규모'].max()
+            min_loan = map_data['대출 규모'].min()
+
+
+
+            # 대출 규모를 정규화하여 새로운 열로 추가
+            map_data['normalized_loan'] = (map_data['대출 규모'] - min_loan) / (max_loan - min_loan)
+
+            map_data['대출 규모 (백만 단위)'] = map_data['대출 규모'] / 1e7
+
+            # 서울 중구의 대표적인 좌표 (위도, 경도)
+            seoul_junggu_coords = (37.5637, 126.9970)
+
+            # map_data에서 '중구'에 해당하는 행의 좌표를 업데이트
+            map_data.loc[map_data['자치구'] == '중구', 'lat'] = seoul_junggu_coords[0]
+            map_data.loc[map_data['자치구'] == '중구', 'lon'] = seoul_junggu_coords[1]
+
+            # 서울 강서구의 대표적인 좌표 (위도, 경도)
+            seoul_gangseogu_coords = (37.5510, 126.8495)
+
+            # map_data에서 '강서구'에 해당하는 행의 좌표를 업데이트
+            map_data.loc[map_data['자치구'] == '강서구', 'lat'] = seoul_gangseogu_coords[0]
+            map_data.loc[map_data['자치구'] == '강서구', 'lon'] = seoul_gangseogu_coords[1]
+
             # Pydeck Layer 생성
             layer = pdk.Layer(
                 "ScatterplotLayer",
-                st.session_state.map_data,
+                map_data,
                 get_position=["lon", "lat"],
                 get_radius="normalized_loan * 1000",
                 get_fill_color=[255, 0, 0, 160],  # RGBA
                 pickable=True,
                 auto_highlight=True
             )
-    
+
             # Pydeck Chart 생성
             tooltip = {
                 "html": "<b>자치구:</b> {자치구} <br/> <b>대출 규모:</b> {대출 규모}",
                 "style": {"backgroundColor": "steelblue", "color": "white"}
             }
-    
+
             # 지도 렌더링
             view_state = pdk.ViewState(latitude=37.5665, longitude=126.9780, zoom=10)
             deck_chart = pdk.Deck(layers=[layer], initial_view_state=view_state, tooltip=tooltip)
-    
+
+            st.subheader("지도에서 자치구별 대출규모 확인하기")
+            # Streamlit에 지도 표시
+            st.pydeck_chart(deck_chart)
             
-            # 세션 상태에 지도 데이터가 저장되었는지 확인 후, 저장된 지도 데이터가 있으면 지도 표시
-            if 'map_data' in st.session_state and st.session_state.map_data is not None:
-                st.subheader("지도에서 자치구별 대출규모 확인하기")
-                st.pydeck_chart(st.session_state.map_data)
+            
+            
 
 
 
