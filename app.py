@@ -286,16 +286,34 @@ if uploaded_file is not None:
         fig.update_yaxes(tickvals=y_tickvals, range=[min(y_tickvals), max(y_tickvals)])
         st.plotly_chart(fig, use_container_width=True)
 
+        # 업종별 연령대 분포 데이터 생성
+        industry_age_distribution = filtered_df.groupby(['대분류업종명', '연령대']).size().reset_index(name='고객 수')
+        industry_age_distribution_pivot = industry_age_distribution.pivot("대분류업종명", "연령대", "고객 수")
+        
+        # 히트맵 생성
+        fig8 = px.imshow(industry_age_distribution_pivot,
+                         labels=dict(x="연령대", y="업종", color="고객 수"),
+                         x=industry_age_distribution_pivot.columns,
+                         y=industry_age_distribution_pivot.index,
+                         aspect="auto",
+                         color_continuous_scale="Viridis") # 여기서 'Viridis' 대신 다른 컬러 스케일을 사용할 수 있습니다.
+        fig8.update_layout(
+            title="업종별 연령대 분포",
+            xaxis_nticks=36,
+            font=dict(
+                family="Arial, monospace",
+                size=14,
+                color="#7f7f7f"
+            )
+        )
+        
+        # 히트맵 차트 표시
+        st.subheader("📊업종별 연령대 분포")
+        st.plotly_chart(fig8, use_container_width=True)
         
         
         
-        
-
-
-        
-        
-        
-        
+   
         #-------------지도에서 자치구별 대출규모 확인-------------------------------------------------------------
         
         
