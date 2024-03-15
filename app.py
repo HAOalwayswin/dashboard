@@ -220,6 +220,7 @@ if uploaded_file is not None:
         industry_loan_combined = industry_loan_combined.sort_values(by=['차입금(운전)', '대출건수'], ascending=[False, False])
         industry_loan_combined['차입금(운전)'] = industry_loan_combined['차입금(운전)'].apply(lambda x: f"{x / 1e6:,.0f}백만원")
 
+        col5, col6 = st.columns(2)
         with col5 :
             st.markdown("## 🏭 업종별 대출 정보", unsafe_allow_html=True)
             st.dataframe(industry_loan_combined.style.highlight_max(axis=0))
@@ -263,7 +264,7 @@ if uploaded_file is not None:
         filtered_df['실행/해지금액(원)'] = pd.to_numeric(filtered_df['실행/해지금액(원)'], errors='coerce')
         loan_amount_by_age_group = filtered_df.groupby('연령대')['실행/해지금액(원)'].sum().reset_index()
         
-        col5, col6 = st.columns(2)
+        col7, col8 = st.columns(2)
         with col7:
             st.markdown("<h3 style='text-align: center; color: black;'>고객 연령 분포</h3>", unsafe_allow_html=True)
             fig = px.bar(age_distribution, x='나이', y='고객 수', color='고객 수')
