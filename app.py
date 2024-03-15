@@ -123,6 +123,9 @@ if uploaded_file is not None:
         min_date, max_date = df['기표일자'].min(), df['기표일자'].max()
         selected_date_range = st.sidebar.slider(
             "기표일자 범위 선택", min_date.date(), max_date.date(), (min_date.date(), max_date.date()))
+
+        filtered_df = df.copy()
+
         
         # 세션 상태 초기화
         if 'filtered_df' not in st.session_state:
