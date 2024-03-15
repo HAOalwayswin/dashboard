@@ -277,8 +277,8 @@ if uploaded_file is not None:
    
         #-------------지도에서 자치구별 대출규모 확인-------------------------------------------------------------
         
-        if st.sidebar.button('자치구별 대출규모 확인'):
-           loan_by_district = calculate_district_loans(filtered_df)
+         if st.sidebar.button('자치구별 대출규모 확인'):
+            loan_by_district = calculate_district_loans(filtered_df)
 
             # GeoJSON 파일 로딩
             gdf = load_geosjson()
