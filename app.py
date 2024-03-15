@@ -294,7 +294,7 @@ if uploaded_file is not None:
            district_to_coords = {row['sggnm']: (row['center'][1], row['center'][0]) for idx, row in gdf.iterrows()}
 
            # 서울 데이터에서 자치구 정보가 있는 행만 선택하고, 각 자치구의 중심 좌표를 새로운 열로 추가
-           seoul_df = seoul_df[seoul_df['자치구'].isin(district_to_coords.keys())]
+           seoul_df = loan_by_district[loan_by_district['자치구'].isin(district_to_coords.keys())]
            seoul_df['lat'] = seoul_df['자치구'].apply(lambda x: district_to_coords[x][0])
            seoul_df['lon'] = seoul_df['자치구'].apply(lambda x: district_to_coords[x][1])
 
