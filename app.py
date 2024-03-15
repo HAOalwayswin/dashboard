@@ -97,7 +97,7 @@ if uploaded_file is not None:
 
         #----------------------sidebar-----------------------------------------------
         st.sidebar.title("필터 옵션")
-
+        
         selected_banks = st.sidebar.multiselect(
             "은행 선택", options=['전체 선택'] + list(df['은행구분'].unique()), default=['전체 선택'])
         
@@ -106,39 +106,28 @@ if uploaded_file is not None:
         
         selected_industries = st.sidebar.multiselect(
             "업종 선택", options=['전체 선택'] + list(df['대분류업종명'].unique()), default=['전체 선택'])
-
-        min_date = df['기표일자'].min().date()
-        max_date = df['기표일자'].max().date()
+        
+        min_date, max_date = df['기표일자'].min(), df['기표일자'].max()
         selected_date_range = st.sidebar.slider(
-            "기표일자 범위 선택", min_date, max_date, (min_date, max_date))
-
-        filtered_df = df.copy()
-
-        if '전체 선택' not in selected_banks:
-            filtered_df = filtered_df[filtered_df['은행구분'].isin(selected_banks)]
-        if '전체 선택' not in selected_years:
-            filtered_df = filtered_df[filtered_df['기표년도'].isin(selected_years)]
-        if '전체 선택' not in selected_industries:
-            filtered_df = filtered_df[filtered_df['대분류업종명'].isin(selected_industries)]
-
-        start_date, end_date = pd.Timestamp(selected_date_range[0]), pd.Timestamp(selected_date_range[1])
-        filtered_df = filtered_df[(filtered_df['기표일자'] >= start_date) & (filtered_df['기표일자'] <= end_date)]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            "기표일자 범위 선택", min_date.date(), max_date.date(), (min_date.date(), max_date.date()))
+        
+        # 세션 상태 초기화
+        if 'filtered_df' not in st.session_state:
+            st.session_state.filtered_df = df.copy()
+        
+        # 필터링 조건이 변경될 때마다 데이터프레임 업데이트
+        def update_filtered_df():
+            filtered_df = df.copy()
+            if '전체 선택' not in selected_banks:
+                filtered_df = filtered_df[filtered_df['은행구분'].isin(selected_banks)]
+            if '전체 선택' not in selected_years:
+                filtered_df = filtered_df[filtered_df['기표년도'].isin(selected_years)]
+            if '전체 선택' not in selected_industries:
+                filtered_df = filtered_df[filtered_df['대분류업종명'].isin(selected_industries)]
+            filtered_df = filtered_df[(filtered_df['기표일자'] >= pd.Timestamp(selected_date_range[0])) & (filtered_df['기표일자'] <= pd.Timestamp(selected_date_range[1]))]
+            st.session_state.filtered_df = filtered_df
+        
+        update_filtered_df()
 
 
 
