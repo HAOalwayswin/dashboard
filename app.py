@@ -134,182 +134,104 @@ if uploaded_file is not None:
 
 
         #-----------------Dashboard-------------------------------------------
-        st.title("📊 보증데이터 대시보드")
-
-        st.success(f"📝 업로드 파일의 총 데이터 수 :   {format(total_count, ',')}건")
-        
-        st.subheader("💰은행별 대출 규모")
-        bank_loan_size = filtered_df.groupby('은행구분')['차입금(운전)'].sum().reset_index()
-
-        # Pie 차트 생성
-        fig1 = px.pie(bank_loan_size, names='은행구분', values='차입금(운전)')
-        fig1.update_layout(
-            title=" ",
-            font=dict(
-                family="Arial, monospace",
-                size=14,
-                color="#7f7f7f"
-            )
-        )
-
-        # Bar 차트 생성
-        fig2 = px.bar(bank_loan_size, x='은행구분', y='차입금(운전)')
-        fig2.update_layout(
-            font=dict(
-                family="Arial, monospace",
-                size=14,
-                color="#7f7f7f"
-            )
-        )
-
-        # 두 컬럼 생성
-        col1, col2 = st.columns(2)
-
-        # 각 컬럼에 차트 할당
-        col1.plotly_chart(fig2, use_container_width=True)
-        col2.plotly_chart(fig1, use_container_width=True)
-
-        
-        loan_amount_by_quarter = filtered_df.resample('Q', on='기표일자')['실행/해지금액(원)'].sum().reset_index()
-        loan_amount_by_quarter['기표일자'] = loan_amount_by_quarter['기표일자'].dt.to_period("Q").astype(str)
-
-        loan_count_by_quarter = filtered_df.resample('Q', on='기표일자').size().reset_index(name='대출건수')
-        loan_count_by_quarter['기표일자'] = loan_count_by_quarter['기표일자'].dt.to_period("Q").astype(str)
-
-        loan_stats = loan_amount_by_quarter['실행/해지금액(원)'].describe()
-
-    
-        # 계산된 통계를 기반으로 y축 라벨 설정
-        y_tickvals = [12500000000, 25000000000, 37500000000, 50000000000]
-        y_ticktext = [f"{val/1e9}B" for val in y_tickvals]  # 단위를 'B' (10^9, Billion)로 표시
-        # 분기별 대출금액 차트
-        st.subheader("📅💰분기별 대출 금액")
-        fig6 = px.line(loan_amount_by_quarter, x='기표일자', y='실행/해지금액(원)')
-        fig6.update_layout(
-            title="  ",
-            font=dict(
-                family="Arial, monospace",
-                size=14,
-                color="#7f7f7f"
-            )
-        )
-        # y축 라벨을 사용자 정의 값으로 설정
-        fig6.update_yaxes(tickvals=y_tickvals, ticktext=y_ticktext, range=[min(y_tickvals), max(y_tickvals)])
-        fig6.update_traces(line_color='blue')
-        st.plotly_chart(fig6, use_container_width=True)
-
-        st.subheader("📅🧮분기별 대출 건수")
-        fig7 = px.line(loan_count_by_quarter, x='기표일자', y='대출건수')
-        fig7.update_layout(
-            title="  ",
-            font=dict(
-                family="Arial, monospace",
-                size=14,
-                color="#7f7f7f"
-            )
-        )
-        st.plotly_chart(fig7, use_container_width=True)
-
-
-        # 업종별 대출 정보
-        st.subheader("🎲업종별 대출 정보")
-
-        # 업종별 대출 규모와 건수 (표)
-        industry_loan_size = filtered_df.groupby('대분류업종명')['차입금(운전)'].sum().reset_index()
-        industry_loan_count = filtered_df.groupby('대분류업종명').size().reset_index(name='대출건수')
-        industry_loan_combined = pd.merge(industry_loan_size, industry_loan_count, on='대분류업종명')
-        industry_loan_combined = industry_loan_combined.sort_values(by=['차입금(운전)', '대출건수'], ascending=[False, False])
-        industry_loan_combined['차입금(운전)'] = industry_loan_combined['차입금(운전)'].apply(lambda x: f"{x / 1e6:,.0f}백만원")
+        # Custom CSS
         st.markdown("""
             <style>
-            table {
-                color: #0066cc;
-                font-family: Arial;
-                border-collapse: collapse;
-                width: 100%; /* 표의 전체 너비를 설정 */
+            .big-font {
+                font-size:30px !important;
+                font-weight: bold;
             }
-            table td {
-                font-size: auto; /* 폰트 크기를 자동으로 조정 */
-                overflow: hidden; /* 내용이 셀을 벗어나면 숨김 */
-                text-overflow: ellipsis; /* 내용이 셀을 벗어나면 ... 로 표시 */
-                max-width: 0;
+            .info-box {
+                background-color: lightblue;
+                padding: 10px;
+                border-radius: 10px;
+                margin: 10px 0;
+            }
+            .dataframe table {
+                color: #343a40;
+            }
+            .dataframe th {
+                background-color: #f0ad4e;
+                color: white;
+            }
+            .dataframe td, .dataframe th {
+                border: 1px solid white;
+                padding: 10px;
+                text-align: center;
+            }
+            .plotly-graph-div {
+                box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+                transition: 0.3s;
+            }
+            .plotly-graph-div:hover {
+                box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
             }
             </style>
             """, unsafe_allow_html=True)
-        st.table(industry_loan_combined)
-
-        # 업종별 대출 규모 (원형 그래프)
-        st.subheader("업종별 대출 규모")
-        fig4 = px.pie(industry_loan_size, names='대분류업종명', values='차입금(운전)', color_discrete_sequence=px.colors.sequential.RdBu)
-        fig4.update_traces(textinfo='percent+label', pull=[0.1, 0.1, 0.1])  # 각 구역에 표시되는 정보와 강조 설정
-        st.plotly_chart(fig4, use_container_width=True)
-
-        # 업종별 대출 건수 (원형 그래프)
-        st.subheader("업종별 대출 건수")
-        fig5 = px.pie(industry_loan_count, names='대분류업종명', values='대출건수', color_discrete_sequence=px.colors.sequential.Plasma)
-        fig5.update_traces(textinfo='percent+label', pull=[0.1, 0.1, 0.1])
-        st.plotly_chart(fig5, use_container_width=True)
-
-        current_year = datetime.now().year
         
-        filtered_df['생년'] = filtered_df['주민번호'].str[:2].astype(int)
-        filtered_df['생년'] = filtered_df['생년'].apply(lambda x: 1900+x if x > 22 else 2000+x)  # 22를 기준으로 1900년대와 2000년대 구분
-        filtered_df['나이'] = current_year - filtered_df['생년']
-        filtered_df['연령대'] = filtered_df['나이'].apply(calculate_age_group)
-        filtered_df['실행/해지금액(원)'] = pd.to_numeric(filtered_df['실행/해지금액(원)'], errors='coerce')
+        # 대시보드 타이틀 및 파일 업로드 정보
+        st.markdown('<div class="big-font">🌟 보증 데이터 인사이트 대시보드 🌟</div>', unsafe_allow_html=True)
+        st.markdown(f"<div class='info-box'>📊 업로드된 파일 총 데이터 수: {format(total_count, ',')}건</div>", unsafe_allow_html=True)
         
-        # 나이 분포 시각화
-        st.subheader("고객 연령 분포")
-        # 나이 분포 데이터 생성
-        age_distribution = filtered_df['나이'].value_counts().sort_index().reset_index()
-        age_distribution.columns = ['나이', '고객 수']
-        fig = px.bar(age_distribution, x='나이', y='고객 수', color='고객 수', color_continuous_scale='Viridis')
-        fig.update_layout(coloraxis_showscale=False)
-        st.plotly_chart(fig, use_container_width=True)
-
-        # 나이별 대출금액 분포
-        loan_amount_by_age_group = filtered_df.groupby('연령대')['실행/해지금액(원)'].sum().reset_index()
-        # 원형 그래프로 시각화
-        st.subheader("연령대별 대출금액 규모")
-        fig = px.pie(loan_amount_by_age_group, names='연령대', values='실행/해지금액(원)', color_discrete_sequence=px.colors.sequential.Agsunset)
-        fig.update_traces(textinfo='percent+label', pull=[0.1, 0.1, 0.1])
-        st.plotly_chart(fig, use_container_width=True)
+        # 데이터 시각화 - 은행별 대출 규모
+        st.markdown("## 💼 은행별 대출 규모", unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("<h3 style='text-align: center; color: black;'>대출 규모 바 차트</h3>", unsafe_allow_html=True)
+            fig2 = px.bar(bank_loan_size, x='은행구분', y='차입금(운전)', text='차입금(운전)')
+            fig2.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+            fig2.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+            st.plotly_chart(fig2, use_container_width=True)
+            
+        with col2:
+            st.markdown("<h3 style='text-align: center; color: black;'>대출 규모 파이 차트</h3>", unsafe_allow_html=True)
+            fig1 = px.pie(bank_loan_size, names='은행구분', values='차입금(운전)', hole=.3)
+            fig1.update_traces(textinfo='percent+label')
+            st.plotly_chart(fig1, use_container_width=True)
         
+        # 분기별 대출 금액 및 대출 건수
+        st.markdown("## 📈 분기별 대출 동향", unsafe_allow_html=True)
+        col3, col4 = st.columns([3, 2])
+        with col3:
+            st.markdown("<h3 style='text-align: center; color: black;'>분기별 대출 금액 변화</h3>", unsafe_allow_html=True)
+            fig6 = px.line(loan_amount_by_quarter, x='기표일자', y='실행/해지금액(원)', markers=True)
+            fig6.update_layout(xaxis_title="분기", yaxis_title="대출금액 (원)")
+            st.plotly_chart(fig6, use_container_width=True)
+            
+        with col4:
+            st.markdown("<h3 style='text-align: center; color: black;'>분기별 대출 건수</h3>", unsafe_allow_html=True)
+            fig7 = px.bar(loan_count_by_quarter, x='기표일자', y='대출건수')
+            fig7.update_layout(xaxis_title="분기", yaxis_title="대출건수")
+            st.plotly_chart(fig7, use_container_width=True)
         
-        # 나이별 대출금액 평균 시각화
-        st.subheader("연령대별 대출금액 평균")
-        # 연령대별 대출금액 평균 계산
-        avg_loan_by_age = filtered_df.groupby('연령대')['실행/해지금액(원)'].mean().reset_index()
-        fig = px.bar(avg_loan_by_age, x='연령대', y='실행/해지금액(원)')
-        # y축 설정: 10,000,000 ~ 50,000,000, 5단계
-        y_tickvals = [20000000,22000000,24000000,26000000,28000000,30000000,32000000,34000000,36000000]
-        fig.update_yaxes(tickvals=y_tickvals, range=[min(y_tickvals), max(y_tickvals)])
-        st.plotly_chart(fig, use_container_width=True)
-
-        # 업종별 연령대 분포 데이터 생성
-        industry_age_distribution = filtered_df.groupby(['대분류업종명', '연령대']).size().reset_index(name='고객 수')
-        industry_age_distribution_pivot = industry_age_distribution.pivot(index='대분류업종명', columns='연령대', values='고객 수')
-
-        # 히트맵 생성
+        # 업종별 대출 정보 및 연령대 분포
+        st.markdown("## 🏭 업종별 대출 정보", unsafe_allow_html=True)
+        st.dataframe(industry_loan_combined.style.highlight_max(axis=0))
+        
+        st.markdown("## 🔍 업종별 연령대 분포", unsafe_allow_html=True)
         fig8 = px.imshow(industry_age_distribution_pivot,
                          labels=dict(x="연령대", y="업종", color="고객 수"),
                          x=industry_age_distribution_pivot.columns,
                          y=industry_age_distribution_pivot.index,
                          aspect="auto",
-                         color_continuous_scale="Viridis") # 여기서 'Viridis' 대신 다른 컬러 스케일을 사용할 수 있습니다.
-        fig8.update_layout(
-            title="업종별 연령대 분포",
-            xaxis_nticks=36,
-            font=dict(
-                family="Arial, monospace",
-                size=14,
-                color="#7f7f7f"
-            )
-        )
-        
-        # 히트맵 차트 표시
-        st.subheader("📊업종별 연령대 분포")
+                         color_continuous_scale="Viridis")
+        fig8.update_layout(title="업종별 연령대 분포", xaxis_nticks=36)
         st.plotly_chart(fig8, use_container_width=True)
+        
+        # 고객 연령 분포 및 연령대별 대출금액
+        st.markdown("## 🧑‍💼 고객 연령 분포 및 대출 분석", unsafe_allow_html=True)
+        col5, col6 = st.columns(2)
+        with col5:
+            st.markdown("<h3 style='text-align: center; color: black;'>고객 연령 분포</h3>", unsafe_allow_html=True)
+            fig = px.bar(age_distribution, x='나이', y='고객 수', color='고객 수')
+            fig.update_layout(coloraxis_showscale=False)
+            st.plotly_chart(fig, use_container_width=True)
+            
+        with col6:
+            st.markdown("<h3 style='text-align: center; color: black;'>연령대별 대출금액</h3>", unsafe_allow_html=True)
+            fig = px.pie(loan_amount_by_age_group, names='연령대', values='실행/해지금액(원)', hole=.3)
+            fig.update_traces(textinfo='percent+label')
+            st.plotly_chart(fig, use_container_width=True)
         
         
         
