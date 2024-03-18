@@ -81,17 +81,6 @@ def calculate_district_loans(df):
 
 uploaded_file = st.file_uploader("파일 업로드", type=["csv", "xlsx", "xls"],key="unique_key_for_uploader")
 
-# PandasAI 대화 기능을 위한 세션 상태 초기화
-if 'api_key' not in st.session_state:
-    st.session_state.api_key = ''
-
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
-
-# 사이드바 설정 및 대화 모드 세션 상태 초기화
-if 'chat_mode' not in st.session_state:
-    st.session_state.chat_mode = False
-
 
 
 if uploaded_file is not None:
@@ -137,7 +126,6 @@ if uploaded_file is not None:
         filtered_df = filtered_df[(filtered_df['기표일자'] >= start_date) & (filtered_df['기표일자'] <= end_date)]
         
 
-        chat_mode = st.sidebar.button('데이터랑 대화하기', key='chat_mode_button')
         # 대화하기 버튼
         if st.sidebar.button('데이터랑 대화하기'):
             st.session_state.chat_mode = True
@@ -289,11 +277,23 @@ if uploaded_file is not None:
             st.plotly_chart(fig, use_container_width=True)
 
 
+        # PandasAI 대화 기능을 위한 세션 상태 초기화
+        if 'api_key' not in st.session_state:
+            st.session_state.api_key = ''
+        
+        if 'chat_history' not in st.session_state:
+            st.session_state.chat_history = []
+        
+        # 사이드바 설정 및 대화 모드 세션 상태 초기화
+        if 'chat_mode' not in st.session_state:
+            st.session_state.chat_mode = False
+
+        
         # API 키 입력 및 저장
         if st.session_state.chat_mode:
             api_key = st.sidebar.text_input("OpenAI API 키 입력", key="api_key")
             st.session_state.api_key = api_key  # API 키 세션 상태에 저장
-        
+            
             # API 키가 제공되면 PandasAI 대화 기능 활성화
             if st.session_state.api_key:
                 st.title("PandasAI와 대화하기")
