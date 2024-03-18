@@ -141,7 +141,7 @@ if uploaded_file is not None:
 
         start_date, end_date = pd.Timestamp(selected_date_range[0]), pd.Timestamp(selected_date_range[1])
         filtered_df = filtered_df[(filtered_df['기표일자'] >= start_date) & (filtered_df['기표일자'] <= end_date)]
-        chat_mode = st.sidebar.button('데이터랑 대화하기')
+        
 
 
 
