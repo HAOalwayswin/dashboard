@@ -126,10 +126,6 @@ if uploaded_file is not None:
         filtered_df = filtered_df[(filtered_df['기표일자'] >= start_date) & (filtered_df['기표일자'] <= end_date)]
         
 
-        # 데이터 대화 모드 활성화 버튼
-        if st.sidebar.button('데이터랑 대화하기', key='chat_mode'):
-            # 버튼이 클릭되면, 'chat_mode' 상태를 반전시킵니다.
-            st.session_state.chat_mode = not st.session_state.get('chat_mode', False)
 
         #-----------------Dashboard-------------------------------------------
         # Custom CSS
@@ -275,7 +271,11 @@ if uploaded_file is not None:
             fig.update_traces(textinfo='percent+label')
             st.plotly_chart(fig, use_container_width=True)
 
-
+        # 데이터 대화 모드 활성화 버튼
+        if st.sidebar.button('데이터랑 대화하기', key='chat_mode'):
+            # 버튼이 클릭되면, 'chat_mode' 상태를 반전시킵니다.
+            st.session_state.chat_mode = not st.session_state.get('chat_mode', False)
+            
         # API 키 입력을 처리합니다.
         if st.session_state.get('chat_mode', False):
             api_key = st.sidebar.text_input("OpenAI API 키 입력", key="api_key")
