@@ -143,7 +143,7 @@ if uploaded_file is not None:
         filtered_df = filtered_df[(filtered_df['기표일자'] >= start_date) & (filtered_df['기표일자'] <= end_date)]
         
 
-
+        chat_mode = st.sidebar.button('데이터랑 대화하기', key='chat_mode_button')
 
 
         #-----------------Dashboard-------------------------------------------
