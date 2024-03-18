@@ -271,10 +271,14 @@ if uploaded_file is not None:
             fig.update_traces(textinfo='percent+label')
             st.plotly_chart(fig, use_container_width=True)
 
-        # 데이터 대화 모드 활성화 버튼
-        if st.sidebar.button('데이터랑 대화하기', key='chat_mode'):
-            st.session_state.chat_mode = not st.session_state.get('chat_mode', False)
-        
+        # '데이터랑 대화하기' 버튼
+        if st.sidebar.button('데이터랑 대화하기', key='toggle_chat'):
+            st.session_state.toggle_chat_mode = not st.session_state.get('toggle_chat_mode', False)
+
+        # toggle_chat_mode가 변경될 때마다 chat_mode를 업데이트
+        if 'toggle_chat_mode' in st.session_state:
+            st.session_state.chat_mode = st.session_state.toggle_chat_mode
+
         if st.session_state.get('chat_mode', False):
             # OpenAI API 키 입력
             if 'api_key' not in st.session_state or st.session_state.api_key == '':
