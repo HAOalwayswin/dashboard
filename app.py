@@ -302,7 +302,7 @@ if uploaded_file is not None:
                     
                     # PandasAI 설정
                     llm = OpenAI(api_token=st.session_state.api_key)
-                    df_ai = SmartDataframe(filtered_df, config={"llm": llm})  # filtered_df는 사용자의 데이터프레임 변수입니다.
+                    df_ai = SmartDataframe(pd.DataFrame(filtered_df), config={"llm": llm})  # filtered_df는 사용자의 데이터프레임 변수입니다.
                     
                     # PandasAI 대화 처리
                     response = df_ai.chat(user_query)
