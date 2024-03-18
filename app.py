@@ -92,7 +92,14 @@ if uploaded_file is not None:
         df['기표년도'] = pd.to_datetime(df['기표일자']).dt.year  # '기표년도' 추출
         df['실행/해지금액(원)'] = pd.to_numeric(df['실행/해지금액(원)'], errors='coerce')
 
+# PandasAI 대화 기능을 위한 세션 상태 초기화
+if 'api_key' not in st.session_state:
+    st.session_state.api_key = ''
 
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
+
+        
 
 
         #----------------------sidebar-----------------------------------------------
@@ -123,7 +130,7 @@ if uploaded_file is not None:
 
         start_date, end_date = pd.Timestamp(selected_date_range[0]), pd.Timestamp(selected_date_range[1])
         filtered_df = filtered_df[(filtered_df['기표일자'] >= start_date) & (filtered_df['기표일자'] <= end_date)]
-
+        chat_mode = st.sidebar.button('데이터랑 대화하기')
 
 
 
@@ -271,7 +278,34 @@ if uploaded_file is not None:
             fig = px.pie(loan_amount_by_age_group, names='연령대', values='실행/해지금액(원)', hole=.3)
             fig.update_traces(textinfo='percent+label')
             st.plotly_chart(fig, use_container_width=True)
+
+
+        if chat_mode:
+            # OpenAI API 키 입력을 위한 사이드바 항목
+            api_key = st.sidebar.text_input("OpenAI API 키 입력", key="api_key")
         
+            # 입력된 API 키가 있다면 PandasAI 기능 활성화
+            if api_key:
+                st.session_state.api_key = api_key
+                st.title("PandasAI와 대화하기")
+                user_query = st.text_input("데이터에게 질문하세요:")
+        
+                # 사용자가 질문을 입력하면 처리
+                if user_query:
+                    # SmartDataframe 인스턴스 생성
+                    llm = OpenAI(api_token=st.session_state.api_key)
+                    df = SmartDataframe(sales_by_country, config={"llm": llm})
+        
+                    # PandasAI로 질문 처리
+                    response = df.chat(user_query)
+                    
+                    # 대화 내역 업데이트
+                    st.session_state.chat_history.append(f"당신: {user_query}")
+                    st.session_state.chat_history.append(f"PandasAI: {response}")
+        
+                    # 대화 내역 표시
+                    for msg in st.session_state.chat_history:
+                        st.text(msg)
         
         
    
