@@ -92,12 +92,6 @@ if 'chat_history' not in st.session_state:
 if 'chat_mode' not in st.session_state:
     st.session_state.chat_mode = False
 
-# 대화하기 버튼
-if st.sidebar.button('데이터랑 대화하기'):
-    st.session_state.chat_mode = True
-else:
-    st.session_state.chat_mode = False
-
 
 
 if uploaded_file is not None:
@@ -144,7 +138,11 @@ if uploaded_file is not None:
         
 
         chat_mode = st.sidebar.button('데이터랑 대화하기', key='chat_mode_button')
-
+        # 대화하기 버튼
+        if st.sidebar.button('데이터랑 대화하기'):
+            st.session_state.chat_mode = True
+        else:
+            st.session_state.chat_mode = False
 
         #-----------------Dashboard-------------------------------------------
         # Custom CSS
