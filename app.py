@@ -128,6 +128,7 @@ if uploaded_file is not None:
 
         # 데이터 대화 모드 활성화 버튼
         if st.sidebar.button('데이터랑 대화하기', key='chat_mode'):
+            # 버튼이 클릭되면, 'chat_mode' 상태를 반전시킵니다.
             st.session_state.chat_mode = not st.session_state.get('chat_mode', False)
 
         #-----------------Dashboard-------------------------------------------
@@ -275,16 +276,12 @@ if uploaded_file is not None:
             st.plotly_chart(fig, use_container_width=True)
 
 
+        # API 키 입력을 처리합니다.
         if st.session_state.get('chat_mode', False):
-            # OpenAI API 키 입력
-            if 'api_key' not in st.session_state or st.session_state.api_key == '':
-                api_key = st.sidebar.text_input("OpenAI API 키 입력", key="api_key")
+            api_key = st.sidebar.text_input("OpenAI API 키 입력", key="api_key")
+            if api_key:  # API 키가 입력되었다면 세션 상태에 저장합니다.
                 st.session_state.api_key = api_key
-        
-            # 대화 기능 활성화 및 사용
-            if st.session_state.api_key:
-                st.title("PandasAI와 대화하기")
-                # 사용자 질문 입력
+            
                 user_query = st.text_input("데이터에게 질문하세요:", key='user_query')
                 
                 # 질문이 입력되면 처리
