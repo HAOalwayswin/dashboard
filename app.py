@@ -285,7 +285,7 @@ if uploaded_file is not None:
                 user_input_api_key = st.sidebar.text_input("OpenAI API 키 입력", value=st.session_state.api_key, key="new_api_key")
                 
             if user_input_api_key:
-            st.session_state.api_key = user_input_api_key
+                st.session_state.api_key = user_input_api_key
         
             # 대화 기능 활성화 및 사용
             if st.session_state.api_key:
