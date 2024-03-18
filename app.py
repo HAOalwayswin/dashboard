@@ -126,11 +126,9 @@ if uploaded_file is not None:
         filtered_df = filtered_df[(filtered_df['기표일자'] >= start_date) & (filtered_df['기표일자'] <= end_date)]
         
 
-        # 대화하기 버튼
-        if st.sidebar.button('데이터랑 대화하기'):
-            st.session_state.chat_mode = True
-        else:
-            st.session_state.chat_mode = False
+        # 데이터 대화 모드 활성화 버튼
+        if st.sidebar.button('데이터랑 대화하기', key='chat_mode'):
+            st.session_state.chat_mode = not st.session_state.get('chat_mode', False)
 
         #-----------------Dashboard-------------------------------------------
         # Custom CSS
@@ -277,43 +275,39 @@ if uploaded_file is not None:
             st.plotly_chart(fig, use_container_width=True)
 
 
-        # PandasAI 대화 기능을 위한 세션 상태 초기화
-        if 'api_key' not in st.session_state:
-            st.session_state.api_key = ''
+        if st.session_state.get('chat_mode', False):
+            # OpenAI API 키 입력
+            if 'api_key' not in st.session_state or st.session_state.api_key == '':
+                api_key = st.sidebar.text_input("OpenAI API 키 입력", key="api_key")
+                st.session_state.api_key = api_key
         
-        if 'chat_history' not in st.session_state:
-            st.session_state.chat_history = []
-        
-        # 사이드바 설정 및 대화 모드 세션 상태 초기화
-        if 'chat_mode' not in st.session_state:
-            st.session_state.chat_mode = False
-
-        
-        # API 키 입력 및 저장
-        if st.session_state.chat_mode:
-            api_key = st.sidebar.text_input("OpenAI API 키 입력", key="api_key")
-            st.session_state.api_key = api_key  # API 키 세션 상태에 저장
-            
-            # API 키가 제공되면 PandasAI 대화 기능 활성화
+            # 대화 기능 활성화 및 사용
             if st.session_state.api_key:
                 st.title("PandasAI와 대화하기")
-                user_query = st.text_input("데이터에게 질문하세요:")
-        
+                # 사용자 질문 입력
+                user_query = st.text_input("데이터에게 질문하세요:", key='user_query')
+                
+                # 질문이 입력되면 처리
                 if user_query:
+                    # 대화 기록 초기화
                     if 'chat_history' not in st.session_state:
                         st.session_state.chat_history = []
-                        
+                    
+                    # PandasAI 설정
                     llm = OpenAI(api_token=st.session_state.api_key)
-                    df = SmartDataframe(your_dataframe, config={"llm": llm})  # 'your_dataframe'를 실제 데이터프레임 변수로 바꿉니다.
-        
-                    response = df.chat(user_query)
-                    st.session_state.chat_history.append(f"당신: {user_query}")
-                    st.session_state.chat_history.append(f"PandasAI: {response}")
-        
-                    # 대화 내역 표시
+                    df_ai = SmartDataframe(filtered_df, config={"llm": llm})  # filtered_df는 사용자의 데이터프레임 변수입니다.
+                    
+                    # PandasAI 대화 처리
+                    response = df_ai.chat(user_query)
+                    # 대화 기록 업데이트
+                    st.session_state.chat_history.append(f"질문: {user_query}")
+                    st.session_state.chat_history.append(f"답변: {response}")
+                    
+                    # 대화 기록 표시
+                    st.write("대화 기록:")
                     for msg in st.session_state.chat_history:
                         st.text(msg)
-        
+                
         
    
         #-------------지도에서 자치구별 대출규모 확인-------------------------------------------------------------
