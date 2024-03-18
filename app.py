@@ -281,8 +281,9 @@ if uploaded_file is not None:
 
         if st.session_state.get('chat_mode', False):
             # OpenAI API 키 입력
-            if 'api_key' not in st.session_state or st.session_state.api_key == '':
-                user_input_api_key = st.sidebar.text_input("OpenAI API 키 입력", value=st.session_state.api_key, key="new_api_key")
+            if 'api_key' not in st.session_state:
+                st.session_state.api_key = ''  # 초기값 설정
+            user_input_api_key = st.sidebar.text_input("OpenAI API 키 입력", value=st.session_state.api_key, key="new_api_key")
                 
             if user_input_api_key:
                 st.session_state.api_key = user_input_api_key
