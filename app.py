@@ -314,7 +314,7 @@ if uploaded_file is not None:
         
                     # 대화 내역 표시
                     for msg in st.session_state.chat_history:
-                st.text(msg)
+                        st.text(msg)
         
         
    
