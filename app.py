@@ -12,7 +12,8 @@ from datetime import datetime
 import time
 import seaborn as sns
 import matplotlib.pyplot as plt
-
+from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
 
 st.set_page_config(layout='wide')
 
@@ -80,6 +81,13 @@ def calculate_district_loans(df):
 
 uploaded_file = st.file_uploader("파일 업로드", type=["csv", "xlsx", "xls"],key="unique_key_for_uploader")
 
+# PandasAI 대화 기능을 위한 세션 상태 초기화
+if 'api_key' not in st.session_state:
+    st.session_state.api_key = ''
+
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
+
 
 if uploaded_file is not None:
     try:
@@ -92,16 +100,8 @@ if uploaded_file is not None:
         df['기표년도'] = pd.to_datetime(df['기표일자']).dt.year  # '기표년도' 추출
         df['실행/해지금액(원)'] = pd.to_numeric(df['실행/해지금액(원)'], errors='coerce')
 
-# PandasAI 대화 기능을 위한 세션 상태 초기화
-if 'api_key' not in st.session_state:
-    st.session_state.api_key = ''
-
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
 
         
-
-
         #----------------------sidebar-----------------------------------------------
         st.sidebar.title("필터 옵션")
 
