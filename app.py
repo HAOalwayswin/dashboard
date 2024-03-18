@@ -88,6 +88,17 @@ if 'api_key' not in st.session_state:
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
+# 사이드바 설정 및 대화 모드 세션 상태 초기화
+if 'chat_mode' not in st.session_state:
+    st.session_state.chat_mode = False
+
+# 대화하기 버튼
+if st.sidebar.button('데이터랑 대화하기'):
+    st.session_state.chat_mode = True
+else:
+    st.session_state.chat_mode = False
+
+
 
 if uploaded_file is not None:
     try:
@@ -280,32 +291,30 @@ if uploaded_file is not None:
             st.plotly_chart(fig, use_container_width=True)
 
 
-        if chat_mode:
-            # OpenAI API 키 입력을 위한 사이드바 항목
+        # API 키 입력 및 저장
+        if st.session_state.chat_mode:
             api_key = st.sidebar.text_input("OpenAI API 키 입력", key="api_key")
+            st.session_state.api_key = api_key  # API 키 세션 상태에 저장
         
-            # 입력된 API 키가 있다면 PandasAI 기능 활성화
-            if api_key:
-                st.session_state.api_key = api_key
+            # API 키가 제공되면 PandasAI 대화 기능 활성화
+            if st.session_state.api_key:
                 st.title("PandasAI와 대화하기")
                 user_query = st.text_input("데이터에게 질문하세요:")
         
-                # 사용자가 질문을 입력하면 처리
                 if user_query:
-                    # SmartDataframe 인스턴스 생성
+                    if 'chat_history' not in st.session_state:
+                        st.session_state.chat_history = []
+                        
                     llm = OpenAI(api_token=st.session_state.api_key)
-                    df = SmartDataframe(sales_by_country, config={"llm": llm})
+                    df = SmartDataframe(your_dataframe, config={"llm": llm})  # 'your_dataframe'를 실제 데이터프레임 변수로 바꿉니다.
         
-                    # PandasAI로 질문 처리
                     response = df.chat(user_query)
-                    
-                    # 대화 내역 업데이트
                     st.session_state.chat_history.append(f"당신: {user_query}")
                     st.session_state.chat_history.append(f"PandasAI: {response}")
         
                     # 대화 내역 표시
                     for msg in st.session_state.chat_history:
-                        st.text(msg)
+                st.text(msg)
         
         
    
