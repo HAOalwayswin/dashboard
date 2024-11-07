@@ -409,12 +409,14 @@ if uploaded_file is not None:
         #-------------국세청 자료 확인하는 메뉴------------------------------------------------------------- 
         if st.sidebar.button('국세청 자료로 휴폐업조회 하기'):
             if '사업자번호' in filtered_df.columns:
+                # 사업자번호에서 NaN 값 제거하고 고유값 추출
                 business_numbers = filtered_df['사업자번호'].dropna().unique()
-                business_df = pd.DataFrame({
-                    '사업자번호': business_numbers
-                })
-            
-                api_url = "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=ZW3%2Fwm7g8jKANr9RV4x%2Fc290L6dFdXB65VGs%2BQgvIbj%2FYScynUFaronWvB3%2FisFXzkKDLqoRpALKT%2FJ5gMe6yA%3D%3D"
+                # int64를 int로 변환하여 JSON 직렬화 문제 방지
+                business_numbers = [int(bn) for bn in business_numbers]
+                
+                business_df = pd.DataFrame({'사업자번호': business_numbers})
+                
+                api_url = "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=YOUR_SERVICE_KEY"
                 headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
                 
                 status_info = {}
@@ -424,16 +426,15 @@ if uploaded_file is not None:
                 chunks = [business_numbers[i:i + 100] for i in range(0, len(business_numbers), 100)]
                 
                 completed = 0
-
                 MAX_RETRIES = 3
                 RETRY_DELAY = 5  # 5초 대기
-
+                
                 for chunk in chunks:
                     success = False
                     retries = 0
                     while not success and retries < MAX_RETRIES:
                         try:
-                            payload_dict = {"b_no": b_id for b_id in chunk}
+                            payload_dict = {"b_no": chunk}
                             response = requests.post(api_url, headers=headers, json=payload_dict)
                             
                             if response.status_code == 200:
@@ -445,23 +446,22 @@ if uploaded_file is not None:
                                         end_date = data_entry.get('end_dt', '정보 없음')
                                         status_info[b_id] = {'영업상태': status, '폐업일': end_date}
                                     success = True
-                            elif response.status_code != 200:
+                            else:
                                 retries += 1
                                 time.sleep(RETRY_DELAY)
                         except (requests.ConnectionError, requests.Timeout):
                             retries += 1
                             if retries < MAX_RETRIES:
                                 time.sleep(RETRY_DELAY)
-
+        
                     completed += len(chunk)
                     progress = completed / total
                     progress_bar.progress(progress)
                     status_text.text(f"총 {total}개 중 {completed}개 완료 ({progress * 100:.2f}%)")
-
+        
                     if not success:
                         st.warning(f"사업자번호 {chunk}에 대한 요청에 실패하였습니다. 나중에 다시 시도해주세요.")
-
-                                
+        
                 progress_bar.progress(1.0)
                 st.markdown(f"### 📈 총 {total}개 중 {total}개 완료 (100%) 🎉")
                 
