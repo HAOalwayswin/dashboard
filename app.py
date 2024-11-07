@@ -168,152 +168,152 @@ if uploaded_file is not None:
         st.markdown(f"<div class='info-box'>📊 업로드된 파일 총 데이터 수: {format(total_count, ',')}건</div>", unsafe_allow_html=True)
         
         # 데이터 시각화 - 은행별 대출 규모
-        bank_loan_size = filtered_df.groupby('은행구분')['차입금(운전)'].sum().reset_index()
-        st.markdown("## 💼 은행별 대출 규모", unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("<h3 style='text-align: center; color: black;'>대출 규모 바 차트</h3>", unsafe_allow_html=True)
-            fig2 = px.bar(bank_loan_size, x='은행구분', y='차입금(운전)', text='차입금(운전)')
-            fig2.update_traces(texttemplate='%{text:.2s}', textposition='outside')
-            fig2.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-            st.plotly_chart(fig2, use_container_width=True)
+        # bank_loan_size = filtered_df.groupby('은행구분')['차입금(운전)'].sum().reset_index()
+        # st.markdown("## 💼 은행별 대출 규모", unsafe_allow_html=True)
+        # col1, col2 = st.columns(2)
+        # with col1:
+        #     st.markdown("<h3 style='text-align: center; color: black;'>대출 규모 바 차트</h3>", unsafe_allow_html=True)
+        #     fig2 = px.bar(bank_loan_size, x='은행구분', y='차입금(운전)', text='차입금(운전)')
+        #     fig2.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+        #     fig2.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+        #     st.plotly_chart(fig2, use_container_width=True)
             
-        with col2:
-            st.markdown("<h3 style='text-align: center; color: black;'>대출 규모 파이 차트</h3>", unsafe_allow_html=True)
-            fig1 = px.pie(bank_loan_size, names='은행구분', values='차입금(운전)', hole=.3)
-            fig1.update_traces(textinfo='percent+label')
-            st.plotly_chart(fig1, use_container_width=True)
+        # with col2:
+        #     st.markdown("<h3 style='text-align: center; color: black;'>대출 규모 파이 차트</h3>", unsafe_allow_html=True)
+        #     fig1 = px.pie(bank_loan_size, names='은행구분', values='차입금(운전)', hole=.3)
+        #     fig1.update_traces(textinfo='percent+label')
+        #     st.plotly_chart(fig1, use_container_width=True)
         
-        # 분기별 대출 금액 및 대출 건수
-        st.markdown("## 📈 분기별 대출 동향", unsafe_allow_html=True)
-        loan_amount_by_quarter = filtered_df.resample('Q', on='기표일자')['실행/해지금액(원)'].sum().reset_index()
-        loan_amount_by_quarter['기표일자'] = loan_amount_by_quarter['기표일자'].dt.to_period("Q").astype(str)
+        # # 분기별 대출 금액 및 대출 건수
+        # st.markdown("## 📈 분기별 대출 동향", unsafe_allow_html=True)
+        # loan_amount_by_quarter = filtered_df.resample('Q', on='기표일자')['실행/해지금액(원)'].sum().reset_index()
+        # loan_amount_by_quarter['기표일자'] = loan_amount_by_quarter['기표일자'].dt.to_period("Q").astype(str)
 
-        loan_count_by_quarter = filtered_df.resample('Q', on='기표일자').size().reset_index(name='대출건수')
-        loan_count_by_quarter['기표일자'] = loan_count_by_quarter['기표일자'].dt.to_period("Q").astype(str)
+        # loan_count_by_quarter = filtered_df.resample('Q', on='기표일자').size().reset_index(name='대출건수')
+        # loan_count_by_quarter['기표일자'] = loan_count_by_quarter['기표일자'].dt.to_period("Q").astype(str)
 
-        loan_stats = loan_amount_by_quarter['실행/해지금액(원)'].describe()
+        # loan_stats = loan_amount_by_quarter['실행/해지금액(원)'].describe()
         
-        col3, col4 = st.columns([3, 2])
-        with col3:
-            st.markdown("<h3 style='text-align: center; color: black;'>분기별 대출 금액 변화</h3>", unsafe_allow_html=True)
-            fig6 = px.line(loan_amount_by_quarter, x='기표일자', y='실행/해지금액(원)', markers=True)
-            fig6.update_layout(xaxis_title="분기", yaxis_title="대출금액 (원)")
-            st.plotly_chart(fig6, use_container_width=True)
+        # col3, col4 = st.columns([3, 2])
+        # with col3:
+        #     st.markdown("<h3 style='text-align: center; color: black;'>분기별 대출 금액 변화</h3>", unsafe_allow_html=True)
+        #     fig6 = px.line(loan_amount_by_quarter, x='기표일자', y='실행/해지금액(원)', markers=True)
+        #     fig6.update_layout(xaxis_title="분기", yaxis_title="대출금액 (원)")
+        #     st.plotly_chart(fig6, use_container_width=True)
             
-        with col4:
-            st.markdown("<h3 style='text-align: center; color: black;'>분기별 대출 건수</h3>", unsafe_allow_html=True)
-            fig7 = px.bar(loan_count_by_quarter, x='기표일자', y='대출건수')
-            fig7.update_layout(xaxis_title="분기", yaxis_title="대출건수")
-            st.plotly_chart(fig7, use_container_width=True)
+        # with col4:
+        #     st.markdown("<h3 style='text-align: center; color: black;'>분기별 대출 건수</h3>", unsafe_allow_html=True)
+        #     fig7 = px.bar(loan_count_by_quarter, x='기표일자', y='대출건수')
+        #     fig7.update_layout(xaxis_title="분기", yaxis_title="대출건수")
+        #     st.plotly_chart(fig7, use_container_width=True)
         
-        # 업종별 대출 정보 및 연령대 분포
-        industry_loan_size = filtered_df.groupby('대분류업종명')['차입금(운전)'].sum().reset_index()
-        industry_loan_count = filtered_df.groupby('대분류업종명').size().reset_index(name='대출건수')
-        industry_loan_combined = pd.merge(industry_loan_size, industry_loan_count, on='대분류업종명')
-        industry_loan_combined = industry_loan_combined.sort_values(by=['차입금(운전)', '대출건수'], ascending=[False, False])
-        industry_loan_combined['차입금(운전)'] = industry_loan_combined['차입금(운전)'].apply(lambda x: f"{x / 1e6:,.0f}백만원")
+        # # 업종별 대출 정보 및 연령대 분포
+        # industry_loan_size = filtered_df.groupby('대분류업종명')['차입금(운전)'].sum().reset_index()
+        # industry_loan_count = filtered_df.groupby('대분류업종명').size().reset_index(name='대출건수')
+        # industry_loan_combined = pd.merge(industry_loan_size, industry_loan_count, on='대분류업종명')
+        # industry_loan_combined = industry_loan_combined.sort_values(by=['차입금(운전)', '대출건수'], ascending=[False, False])
+        # industry_loan_combined['차입금(운전)'] = industry_loan_combined['차입금(운전)'].apply(lambda x: f"{x / 1e6:,.0f}백만원")
 
-        col5, col6 = st.columns(2)
-        with col5 :
-            st.markdown("## 🏭 업종별 대출 정보", unsafe_allow_html=True)
-            st.dataframe(industry_loan_combined.style.highlight_max(axis=0),use_container_width=True)
-        with col6 :
-            st.markdown("<h3 style='text-align: center; color: black;'>업종별 대출 규모 파이 차트</h3>", unsafe_allow_html=True)
-            fig8 = px.pie(industry_loan_combined, names='대분류업종명', values='대출건수', hole=.3)
-            fig8.update_traces(textinfo='percent+label')
-            st.plotly_chart(fig8, use_container_width=True)
+        # col5, col6 = st.columns(2)
+        # with col5 :
+        #     st.markdown("## 🏭 업종별 대출 정보", unsafe_allow_html=True)
+        #     st.dataframe(industry_loan_combined.style.highlight_max(axis=0),use_container_width=True)
+        # with col6 :
+        #     st.markdown("<h3 style='text-align: center; color: black;'>업종별 대출 규모 파이 차트</h3>", unsafe_allow_html=True)
+        #     fig8 = px.pie(industry_loan_combined, names='대분류업종명', values='대출건수', hole=.3)
+        #     fig8.update_traces(textinfo='percent+label')
+        #     st.plotly_chart(fig8, use_container_width=True)
         
-        st.markdown("## 🔍 업종별 연령대 분포", unsafe_allow_html=True)
+        # st.markdown("## 🔍 업종별 연령대 분포", unsafe_allow_html=True)
         
-        current_year = datetime.now().year
+        # current_year = datetime.now().year
         
-        filtered_df['생년'] = filtered_df['주민번호'].str[:2].astype(int)
-        filtered_df['생년'] = filtered_df['생년'].apply(lambda x: 1900+x if x > 22 else 2000+x)  # 22를 기준으로 1900년대와 2000년대 구분
-        filtered_df['나이'] = current_year - filtered_df['생년']
-        filtered_df['연령대'] = filtered_df['나이'].apply(calculate_age_group)
-        filtered_df['실행/해지금액(원)'] = pd.to_numeric(filtered_df['실행/해지금액(원)'], errors='coerce')
-        age_distribution = filtered_df['나이'].value_counts().sort_index().reset_index()
-        age_distribution.columns = ['나이', '고객 수']
+        # filtered_df['생년'] = filtered_df['주민번호'].str[:2].astype(int)
+        # filtered_df['생년'] = filtered_df['생년'].apply(lambda x: 1900+x if x > 22 else 2000+x)  # 22를 기준으로 1900년대와 2000년대 구분
+        # filtered_df['나이'] = current_year - filtered_df['생년']
+        # filtered_df['연령대'] = filtered_df['나이'].apply(calculate_age_group)
+        # filtered_df['실행/해지금액(원)'] = pd.to_numeric(filtered_df['실행/해지금액(원)'], errors='coerce')
+        # age_distribution = filtered_df['나이'].value_counts().sort_index().reset_index()
+        # age_distribution.columns = ['나이', '고객 수']
         
-        industry_age_distribution = filtered_df.groupby(['대분류업종명', '연령대']).size().reset_index(name='고객 수')
-        industry_age_distribution_pivot = industry_age_distribution.pivot(index='대분류업종명', columns='연령대', values='고객 수')
+        # industry_age_distribution = filtered_df.groupby(['대분류업종명', '연령대']).size().reset_index(name='고객 수')
+        # industry_age_distribution_pivot = industry_age_distribution.pivot(index='대분류업종명', columns='연령대', values='고객 수')
         
-        fig8 = px.imshow(industry_age_distribution_pivot,
-                         labels=dict(x="연령대", y="업종", color="고객 수"),
-                         x=industry_age_distribution_pivot.columns,
-                         y=industry_age_distribution_pivot.index,
-                         aspect="auto",
-                         color_continuous_scale="Viridis")
-        fig8.update_layout(title="업종별 연령대 분포", xaxis_nticks=36)
-        st.plotly_chart(fig8, use_container_width=True)
+        # fig8 = px.imshow(industry_age_distribution_pivot,
+        #                  labels=dict(x="연령대", y="업종", color="고객 수"),
+        #                  x=industry_age_distribution_pivot.columns,
+        #                  y=industry_age_distribution_pivot.index,
+        #                  aspect="auto",
+        #                  color_continuous_scale="Viridis")
+        # fig8.update_layout(title="업종별 연령대 분포", xaxis_nticks=36)
+        # st.plotly_chart(fig8, use_container_width=True)
         
-        # 고객 연령 분포 및 연령대별 대출금액
-        st.markdown("## 🧑‍💼 고객 연령 분포 및 대출 분석", unsafe_allow_html=True)
+        # # 고객 연령 분포 및 연령대별 대출금액
+        # st.markdown("## 🧑‍💼 고객 연령 분포 및 대출 분석", unsafe_allow_html=True)
             
-        filtered_df['생년'] = filtered_df['주민번호'].str[:2].astype(int)
-        filtered_df['생년'] = filtered_df['생년'].apply(lambda x: 1900+x if x > 22 else 2000+x)  # 22를 기준으로 1900년대와 2000년대 구분
-        filtered_df['나이'] = current_year - filtered_df['생년']
-        filtered_df['연령대'] = filtered_df['나이'].apply(calculate_age_group)
-        filtered_df['실행/해지금액(원)'] = pd.to_numeric(filtered_df['실행/해지금액(원)'], errors='coerce')
-        loan_amount_by_age_group = filtered_df.groupby('연령대')['실행/해지금액(원)'].sum().reset_index()
+        # filtered_df['생년'] = filtered_df['주민번호'].str[:2].astype(int)
+        # filtered_df['생년'] = filtered_df['생년'].apply(lambda x: 1900+x if x > 22 else 2000+x)  # 22를 기준으로 1900년대와 2000년대 구분
+        # filtered_df['나이'] = current_year - filtered_df['생년']
+        # filtered_df['연령대'] = filtered_df['나이'].apply(calculate_age_group)
+        # filtered_df['실행/해지금액(원)'] = pd.to_numeric(filtered_df['실행/해지금액(원)'], errors='coerce')
+        # loan_amount_by_age_group = filtered_df.groupby('연령대')['실행/해지금액(원)'].sum().reset_index()
         
-        col7, col8 = st.columns(2)
-        with col7:
-            st.markdown("<h3 style='text-align: center; color: black;'>고객 연령 분포</h3>", unsafe_allow_html=True)
-            fig = px.bar(age_distribution, x='나이', y='고객 수', color='고객 수')
-            fig.update_layout(coloraxis_showscale=False)
-            st.plotly_chart(fig, use_container_width=True)
+        # col7, col8 = st.columns(2)
+        # with col7:
+        #     st.markdown("<h3 style='text-align: center; color: black;'>고객 연령 분포</h3>", unsafe_allow_html=True)
+        #     fig = px.bar(age_distribution, x='나이', y='고객 수', color='고객 수')
+        #     fig.update_layout(coloraxis_showscale=False)
+        #     st.plotly_chart(fig, use_container_width=True)
             
-        with col8:
-            st.markdown("<h3 style='text-align: center; color: black;'>연령대별 대출금액</h3>", unsafe_allow_html=True)
-            fig = px.pie(loan_amount_by_age_group, names='연령대', values='실행/해지금액(원)', hole=.3)
-            fig.update_traces(textinfo='percent+label')
-            st.plotly_chart(fig, use_container_width=True)
+        # with col8:
+        #     st.markdown("<h3 style='text-align: center; color: black;'>연령대별 대출금액</h3>", unsafe_allow_html=True)
+        #     fig = px.pie(loan_amount_by_age_group, names='연령대', values='실행/해지금액(원)', hole=.3)
+        #     fig.update_traces(textinfo='percent+label')
+        #     st.plotly_chart(fig, use_container_width=True)
 
-        # '데이터랑 대화하기' 버튼
-        if st.sidebar.button('데이터랑 대화하기', key='toggle_chat'):
-            st.session_state.toggle_chat_mode = not st.session_state.get('toggle_chat_mode', False)
+        # # '데이터랑 대화하기' 버튼
+        # if st.sidebar.button('데이터랑 대화하기', key='toggle_chat'):
+        #     st.session_state.toggle_chat_mode = not st.session_state.get('toggle_chat_mode', False)
 
-        # toggle_chat_mode가 변경될 때마다 chat_mode를 업데이트
-        if 'toggle_chat_mode' in st.session_state:
-            st.session_state.chat_mode = st.session_state.toggle_chat_mode
+        # # toggle_chat_mode가 변경될 때마다 chat_mode를 업데이트
+        # if 'toggle_chat_mode' in st.session_state:
+        #     st.session_state.chat_mode = st.session_state.toggle_chat_mode
 
-        if st.session_state.get('chat_mode', False):
-            # OpenAI API 키 입력
-            if 'api_key' not in st.session_state:
-                st.session_state.api_key = ''  # 초기값 설정
-            user_input_api_key = st.sidebar.text_input("OpenAI API 키 입력", value=st.session_state.api_key, key="new_api_key")
+        # if st.session_state.get('chat_mode', False):
+        #     # OpenAI API 키 입력
+        #     if 'api_key' not in st.session_state:
+        #         st.session_state.api_key = ''  # 초기값 설정
+        #     user_input_api_key = st.sidebar.text_input("OpenAI API 키 입력", value=st.session_state.api_key, key="new_api_key")
                 
-            if user_input_api_key:
-                st.session_state.api_key = user_input_api_key
+        #     if user_input_api_key:
+        #         st.session_state.api_key = user_input_api_key
         
-            # 대화 기능 활성화 및 사용
-            if st.session_state.api_key:
-                st.title("PandasAI와 대화하기")
-                # 사용자 질문 입력
-                user_query = st.text_input("데이터에게 질문하세요:", key='user_query')
+        #     # 대화 기능 활성화 및 사용
+        #     if st.session_state.api_key:
+        #         st.title("PandasAI와 대화하기")
+        #         # 사용자 질문 입력
+        #         user_query = st.text_input("데이터에게 질문하세요:", key='user_query')
                 
-                # 질문이 입력되면 처리
-                if user_query:
-                    # 대화 기록 초기화
-                    if 'chat_history' not in st.session_state:
-                        st.session_state.chat_history = []
+        #         # 질문이 입력되면 처리
+        #         if user_query:
+        #             # 대화 기록 초기화
+        #             if 'chat_history' not in st.session_state:
+        #                 st.session_state.chat_history = []
                     
-                    # PandasAI 설정
-                    llm = OpenAI(api_token=st.session_state.api_key)
-                    df_ai = SmartDataframe(pd.DataFrame(filtered_df), config={"llm": llm})  # filtered_df는 사용자의 데이터프레임 변수입니다.
+        #             # PandasAI 설정
+        #             llm = OpenAI(api_token=st.session_state.api_key)
+        #             df_ai = SmartDataframe(pd.DataFrame(filtered_df), config={"llm": llm})  # filtered_df는 사용자의 데이터프레임 변수입니다.
                     
-                    # PandasAI 대화 처리
-                    response = df_ai.chat(user_query)
-                    # 대화 기록 업데이트
-                    st.session_state.chat_history.append(f"질문: {user_query}")
-                    st.session_state.chat_history.append(f"답변: {response}")
+        #             # PandasAI 대화 처리
+        #             response = df_ai.chat(user_query)
+        #             # 대화 기록 업데이트
+        #             st.session_state.chat_history.append(f"질문: {user_query}")
+        #             st.session_state.chat_history.append(f"답변: {response}")
                     
-                    # 대화 기록 표시
-                    st.write("대화 기록:")
-                    for msg in st.session_state.chat_history:
-                        st.text(msg)
+        #             # 대화 기록 표시
+        #             st.write("대화 기록:")
+        #             for msg in st.session_state.chat_history:
+        #                 st.text(msg)
                 
         
    
