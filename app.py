@@ -433,7 +433,7 @@ if uploaded_file is not None:
                     retries = 0
                     while not success and retries < MAX_RETRIES:
                         try:
-                            payload_dict = {"b_no": [str(b_id.replace("-", "")) for b_id in chunk]}
+                            payload_dict = {"b_no": b_id for b_id in chunk]}
                             response = requests.post(api_url, headers=headers, json=payload_dict)
                             
                             if response.status_code == 200:
