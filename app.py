@@ -416,7 +416,7 @@ if uploaded_file is not None:
                 
                 business_df = pd.DataFrame({'사업자번호': business_numbers})
                 
-                api_url = "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=YOUR_SERVICE_KEY"
+                api_url = "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=ZW3%2Fwm7g8jKANr9RV4x%2Fc290L6dFdXB65VGs%2BQgvIbj%2FYScynUFaronWvB3%2FisFXzkKDLqoRpALKT%2FJ5gMe6yA%3D%3D"
                 headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
                 
                 status_info = {}
